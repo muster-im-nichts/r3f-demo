@@ -1,16 +1,13 @@
 import { Canvas } from '@react-three/fiber'
 import { Html, OrbitControls, Environment } from '@react-three/drei'
-import { useState, useRef } from 'react'
-import * as THREE from 'three'
+import { useState } from 'react'
 
 function InteractiveBox({ position, color }: { position: [number, number, number], color: string }) {
   const [count, setCount] = useState(0)
   const [hovered, setHovered] = useState(false)
-  const meshRef = useRef<THREE.Mesh>(null)
 
   return (
     <mesh
-      ref={meshRef}
       position={position}
       onClick={() => setCount(c => c + 1)}
       onPointerOver={() => setHovered(true)}
@@ -21,10 +18,8 @@ function InteractiveBox({ position, color }: { position: [number, number, number
       <meshStandardMaterial color={hovered ? 'hotpink' : color} />
       <Html
         transform
-        occlude="blending"
-        position={[0, 0, 1.001]}
-        distanceFactor={8}
-        style={{ pointerEvents: 'none' }}
+        position={[0, 0, 1.01]}
+        center
       >
         <div style={{
           background: 'rgba(255,255,255,0.95)',
@@ -51,17 +46,15 @@ function InteractiveBox({ position, color }: { position: [number, number, number
 
 function FloatingCard() {
   const [input, setInput] = useState('')
-  const meshRef = useRef<THREE.Mesh>(null)
   
   return (
-    <mesh ref={meshRef} position={[4, 1, 0]} rotation={[0, -0.5, 0]}>
+    <mesh position={[4, 1, 0]} rotation={[0, -0.5, 0]}>
       <boxGeometry args={[3, 2, 0.2]} />
       <meshStandardMaterial color="#667eea" />
       <Html
         transform
-        occlude="blending"
         position={[0, 0, 0.11]}
-        distanceFactor={8}
+        center
       >
         <div style={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',

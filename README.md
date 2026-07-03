@@ -1,32 +1,32 @@
-# React + TypeScript + Vite
+# Eberswalder Zeitreise
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Prototyp (Vertical Slice, Reifegrad 1) des Text-Adventures für das Museum
+Eberswalde: ein klassisches 80er-Adventure als 3D-Theaterbühne — Matte-Painting-
+Hintergrund, Pixel-Avatar im Vordergrund, sanfter Parallax, 8-Bit-Musik.
 
-Currently, two official plugins are available:
+## Starten
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Dann http://localhost:5173 öffnen (auch am Smartphone im selben Netz nutzbar,
+`npm run dev -- --host`).
+
+## Aufbau
+
+- `src/game/` — Story-Engine und Kampagnen, reines TypeScript ohne React/three.
+  Neue Geschichten entstehen als Daten in `src/game/campaigns/` (Format siehe
+  `types.ts`; `validateCampaign` prüft die Struktur beim Dev-Start).
+- `src/scene/` — die R3F-Bühne: Backdrop mit Crossfade, prozeduraler
+  Pixel-Avatar, Parallax-Kamera, Textur-Lader mit Platzhalter-Fallback.
+- `src/ui/` — DOM-Overlays: Start-, Adventure- und End-Screen, Letterbox.
+- `src/audio/` — prozeduraler Chiptune-Loop und SFX (WebAudio, keine Dateien).
+
+## Szenenbilder
+
+Echte Hintergründe (Pixel-Art, 16:9) einfach unter `src/assets/scenes/`
+ablegen — Namensschema und aktuell verwendete Szenen-Keys stehen in
+`src/assets/scenes/README.md`. Ohne Bild generiert die App automatisch
+einen stimmungsvollen Platzhalter.

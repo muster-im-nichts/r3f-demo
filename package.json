@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/press-start-2p": "^5.2.7",
+    "@fontsource/vt323": "^5.2.7",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "react": "^19.2.7",

@@ -1,3 +1,20 @@
+@import '@fontsource/press-start-2p';
+@import '@fontsource/vt323';
+
+:root {
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-text: 'VT323', monospace;
+  --color-bg: #0a0812;
+  --color-panel: #17131f;
+  --color-panel-border: #3a2f4d;
+  --color-gold: #d9a441;
+  --color-gold-dim: #8a6a2f;
+  --color-text: #e8e0cc;
+  --color-text-dim: #a89c82;
+  --color-accent: #7ec4a2;
+  --color-danger: #d96a5a;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -6,6 +23,17 @@
 
 html, body, #root {
   width: 100%;
-  height: 100%;
+  height: 100dvh;
   overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-text);
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
 }

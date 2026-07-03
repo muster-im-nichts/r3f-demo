@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
-import { CanvasTexture, MathUtils, type Mesh } from 'three'
+import { CanvasTexture, MathUtils, type Group, type Mesh } from 'three'
 import { spriteTexture, SPRITE_ASPECT } from './sprites'
 import type { Character } from '../game/types'
 
@@ -44,21 +44,36 @@ export function Avatar({ character, speech }: { character: Character; speech?: s
   const narrow = viewportWidth < 3
   const bubbleY = narrow ? HEIGHT + 0.95 : HEIGHT + 0.45
 
-  useFrame(state => {
+  const pivot = useRef<Group>(null)
+
+  useFrame((state, delta) => {
     if (!mesh.current) return
     const t = state.clock.elapsedTime
     const breathe = Math.sin(t * 2) * 0.012
     mesh.current.scale.y = 1 + breathe
     mesh.current.position.y = (HEIGHT / 2) * (1 + breathe)
     mesh.current.rotation.z = Math.sin(t * 0.7) * 0.01
+
+    // Der Maus folgen: gedämpfte Neigung um den Fußpunkt — links/rechts als
+    // Schräglage + leichte Drehung, oben/unten als minimales Kippen
+    if (pivot.current) {
+      const px = MathUtils.clamp(state.pointer.x, -1, 1)
+      const py = MathUtils.clamp(state.pointer.y, -1, 1)
+      pivot.current.rotation.z = MathUtils.damp(pivot.current.rotation.z, -px * 0.09, 4, delta)
+      pivot.current.rotation.y = MathUtils.damp(pivot.current.rotation.y, px * 0.16, 4, delta)
+      pivot.current.rotation.x = MathUtils.damp(pivot.current.rotation.x, -py * 0.05, 4, delta)
+    }
   })
 
   return (
     <group position={[x, 0, 0.2]}>
-      <mesh ref={mesh} position={[0, HEIGHT / 2, 0]}>
-        <planeGeometry args={[WIDTH, HEIGHT]} />
-        <meshBasicMaterial map={texture} transparent alphaTest={0.5} />
-      </mesh>
+      {/* Pivot am Fußpunkt, damit die Neigung natürlich wirkt */}
+      <group ref={pivot}>
+        <mesh ref={mesh} position={[0, HEIGHT / 2, 0]}>
+          <planeGeometry args={[WIDTH, HEIGHT]} />
+          <meshBasicMaterial map={texture} transparent alphaTest={0.5} />
+        </mesh>
+      </group>
       {/* Kontaktschatten */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
         <planeGeometry args={[1.0, 0.5]} />

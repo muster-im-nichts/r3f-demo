@@ -1,13 +1,16 @@
 import { Canvas } from '@react-three/fiber'
 import { Html, OrbitControls, Environment } from '@react-three/drei'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import * as THREE from 'three'
 
 function InteractiveBox({ position, color }: { position: [number, number, number], color: string }) {
   const [count, setCount] = useState(0)
   const [hovered, setHovered] = useState(false)
+  const meshRef = useRef<THREE.Mesh>(null)
 
   return (
     <mesh
+      ref={meshRef}
       position={position}
       onClick={() => setCount(c => c + 1)}
       onPointerOver={() => setHovered(true)}
@@ -18,7 +21,9 @@ function InteractiveBox({ position, color }: { position: [number, number, number
       <meshStandardMaterial color={hovered ? 'hotpink' : color} />
       <Html
         transform
-        position={[0, 0, 1.01]}
+        occlude="blending"
+        position={[0, 0, 1.001]}
+        distanceFactor={8}
         style={{ pointerEvents: 'none' }}
       >
         <div style={{
@@ -29,7 +34,8 @@ function InteractiveBox({ position, color }: { position: [number, number, number
           fontSize: '14px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           minWidth: '120px',
-          textAlign: 'center'
+          textAlign: 'center',
+          userSelect: 'none'
         }}>
           <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
             React auf 3D! 🎉
@@ -45,19 +51,26 @@ function InteractiveBox({ position, color }: { position: [number, number, number
 
 function FloatingCard() {
   const [input, setInput] = useState('')
+  const meshRef = useRef<THREE.Mesh>(null)
   
   return (
-    <mesh position={[4, 1, 0]} rotation={[0, -0.5, 0]}>
-      <planeGeometry args={[3, 2]} />
-      <meshStandardMaterial color="#1a1a2e" />
-      <Html transform position={[0, 0, 0.01]}>
+    <mesh ref={meshRef} position={[4, 1, 0]} rotation={[0, -0.5, 0]}>
+      <boxGeometry args={[3, 2, 0.2]} />
+      <meshStandardMaterial color="#667eea" />
+      <Html
+        transform
+        occlude="blending"
+        position={[0, 0, 0.11]}
+        distanceFactor={8}
+      >
         <div style={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           padding: '20px',
           borderRadius: '12px',
           color: 'white',
           fontFamily: 'system-ui, sans-serif',
-          width: '200px'
+          width: '200px',
+          userSelect: 'none'
         }}>
           <h3 style={{ margin: '0 0 12px 0', fontSize: '16px' }}>
             Echtes Input! ✨

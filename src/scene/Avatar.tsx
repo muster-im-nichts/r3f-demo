@@ -1,9 +1,26 @@
 import { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
-import { MathUtils, type Mesh } from 'three'
+import { CanvasTexture, MathUtils, type Mesh } from 'three'
 import { spriteTexture, SPRITE_ASPECT } from './sprites'
 import type { Character } from '../game/types'
+
+let shadowTexture: CanvasTexture | null = null
+
+function getShadowTexture(): CanvasTexture {
+  if (shadowTexture) return shadowTexture
+  const canvas = document.createElement('canvas')
+  canvas.width = 64
+  canvas.height = 64
+  const ctx = canvas.getContext('2d')!
+  const grad = ctx.createRadialGradient(32, 32, 4, 32, 32, 30)
+  grad.addColorStop(0, 'rgba(0,0,0,0.55)')
+  grad.addColorStop(1, 'rgba(0,0,0,0)')
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, 64, 64)
+  shadowTexture = new CanvasTexture(canvas)
+  return shadowTexture
+}
 
 const HEIGHT = 1.5
 const WIDTH = HEIGHT * SPRITE_ASPECT
@@ -41,6 +58,11 @@ export function Avatar({ character, speech }: { character: Character; speech?: s
       <mesh ref={mesh} position={[0, HEIGHT / 2, 0]}>
         <planeGeometry args={[WIDTH, HEIGHT]} />
         <meshBasicMaterial map={texture} transparent alphaTest={0.5} />
+      </mesh>
+      {/* Kontaktschatten */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+        <planeGeometry args={[1.0, 0.5]} />
+        <meshBasicMaterial map={getShadowTexture()} transparent depthWrite={false} />
       </mesh>
       {speech && (
         <Html

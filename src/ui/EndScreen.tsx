@@ -49,7 +49,7 @@ export function EndScreen({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'rgba(5, 3, 10, 0.82)',
+        background: 'rgba(5, 3, 10, 0.45)',
         zIndex: 4,
       }}
     >

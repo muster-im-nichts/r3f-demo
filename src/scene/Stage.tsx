@@ -3,23 +3,29 @@ import { Canvas } from '@react-three/fiber'
 import { CameraRig } from './CameraRig'
 import { Backdrop } from './Backdrop'
 import { Avatar } from './Avatar'
+import { Props } from './Props'
+import { Curtain } from './Curtain'
+import { Atmosphere } from './Atmosphere'
 import type { Character, EpochId } from '../game/types'
 import { getEpoch } from '../game/epochs'
 
 /**
- * Die Theaterbühne: Matte-Painting hinten, Bühnenboden, Avatar vorn.
- * `flat` (NoToneMapping), damit Pixel-Art-Farben unverfälscht bleiben.
+ * Die Theaterbühne: Matte-Painting hinten, Requisiten im Mittelgrund,
+ * Avatar vorn, Vorhang ganz vorn. `flat` (NoToneMapping), damit
+ * Pixel-Art-Farben unverfälscht bleiben.
  */
 export function Stage({
   epoch,
   scene,
   character,
   speech,
+  curtainClosed,
 }: {
   epoch: EpochId
   scene: string
   character: Character
   speech?: string
+  curtainClosed: boolean
 }) {
   const lightColor = getEpoch(epoch).mood.light
   return (
@@ -31,7 +37,10 @@ export function Stage({
       <Suspense fallback={null}>
         <CameraRig />
         <Backdrop epoch={epoch} scene={scene} />
+        <Props scene={scene} />
         <Avatar character={character} speech={speech} />
+        <Atmosphere color={lightColor} />
+        <Curtain closed={curtainClosed} />
 
         {/* Bühnenboden: nimmt das warme Laternenlicht auf */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -2]}>

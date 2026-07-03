@@ -59,6 +59,7 @@ export default function App() {
         speech={
           phase.kind === 'playing' && node.speech ? resolveText(node.speech, setup) : undefined
         }
+        curtainClosed={phase.kind === 'end'}
       />
       <Letterbox />
 

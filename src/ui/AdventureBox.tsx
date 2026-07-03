@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import type { StoryOption } from '../game/types'
 import { useTypewriter } from './useTypewriter'
 import { click } from '../audio/sfx'
+import { MOVE_KEYS } from '../scene/moveKeys'
 
 /**
  * Die klassische Adventure-Textbox am unteren Bühnenrand: Typewriter-Text,
@@ -21,6 +22,8 @@ export function AdventureBox({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Lauf-Tasten steuern den Avatar, nicht die Textbox
+      if (MOVE_KEYS[e.key.toLowerCase()]) return
       if (!done) {
         skip()
         return

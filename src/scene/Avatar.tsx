@@ -1,9 +1,15 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
-import { CanvasTexture, MathUtils, type Group, type Mesh } from 'three'
+import { CanvasTexture, DoubleSide, MathUtils, type Group, type Mesh } from 'three'
 import { spriteTexture, SPRITE_ASPECT } from './sprites'
+import { MOVE_KEYS } from './moveKeys'
 import type { Character } from '../game/types'
+
+const WALK_SPEED = 1.7
+const DEPTH_SPEED = 1.2
+const Z_MIN = -1.4 // hinten, kurz vor den Props
+const Z_MAX = 0.9 // vorn an der Rampe
 
 let shadowTexture: CanvasTexture | null = null
 
@@ -45,33 +51,86 @@ export function Avatar({ character, speech }: { character: Character; speech?: s
   const bubbleY = narrow ? HEIGHT + 0.95 : HEIGHT + 0.45
 
   const pivot = useRef<Group>(null)
+  const group = useRef<Group>(null)
+
+  // Laufen mit Pfeiltasten/WASD
+  const pressed = useRef(new Set<string>())
+  const pos = useRef({ x, z: 0.2 })
+  const facing = useRef(1) // 1 = rechts, -1 = links
+  const walkPhase = useRef(0)
+  const walkAmp = useRef(0)
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      const dir = MOVE_KEYS[e.key.toLowerCase()]
+      if (!dir) return
+      pressed.current.add(dir)
+      if (e.key.startsWith('Arrow')) e.preventDefault()
+    }
+    const up = (e: KeyboardEvent) => {
+      const dir = MOVE_KEYS[e.key.toLowerCase()]
+      if (dir) pressed.current.delete(dir)
+    }
+    const clear = () => pressed.current.clear()
+    window.addEventListener('keydown', down)
+    window.addEventListener('keyup', up)
+    window.addEventListener('blur', clear)
+    return () => {
+      window.removeEventListener('keydown', down)
+      window.removeEventListener('keyup', up)
+      window.removeEventListener('blur', clear)
+    }
+  }, [])
 
   useFrame((state, delta) => {
     if (!mesh.current) return
     const t = state.clock.elapsedTime
+
+    // Bewegung integrieren, an Sichtfeld und Bühnentiefe geclampt
+    const keys = pressed.current
+    const vx = (keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0)
+    const vz = (keys.has('front') ? 1 : 0) - (keys.has('back') ? 1 : 0)
+    const xLimit = Math.min(3.2, Math.max(0.9, viewportWidth / 2 - 0.55))
+    pos.current.x = MathUtils.clamp(pos.current.x + vx * WALK_SPEED * delta, -xLimit, xLimit)
+    pos.current.z = MathUtils.clamp(pos.current.z + vz * DEPTH_SPEED * delta, Z_MIN, Z_MAX)
+    if (vx !== 0) facing.current = vx
+    if (group.current) group.current.position.set(pos.current.x, 0, pos.current.z)
+
+    // Geh-Wippen (weich ein-/ausblendend) + Atmen
+    const moving = vx !== 0 || vz !== 0
+    walkAmp.current = MathUtils.damp(walkAmp.current, moving ? 1 : 0, 8, delta)
+    walkPhase.current += delta * 11 * walkAmp.current
+    const bob = Math.abs(Math.sin(walkPhase.current)) * 0.06 * walkAmp.current
     const breathe = Math.sin(t * 2) * 0.012
     mesh.current.scale.y = 1 + breathe
-    mesh.current.position.y = (HEIGHT / 2) * (1 + breathe)
+    mesh.current.position.y = (HEIGHT / 2) * (1 + breathe) + bob
     mesh.current.rotation.z = Math.sin(t * 0.7) * 0.01
 
-    // Der Maus folgen: gedämpfte Neigung um den Fußpunkt — links/rechts als
-    // Schräglage + leichte Drehung, oben/unten als minimales Kippen
+    // Der Maus folgen + in Laufrichtung drehen/lehnen. Der Papiertheater-Flip
+    // läuft über scale.x, das beim Umdrehen kurz durch 0 geht.
     if (pivot.current) {
       const px = MathUtils.clamp(state.pointer.x, -1, 1)
       const py = MathUtils.clamp(state.pointer.y, -1, 1)
-      pivot.current.rotation.z = MathUtils.damp(pivot.current.rotation.z, -px * 0.09, 4, delta)
+      pivot.current.rotation.z = MathUtils.damp(
+        pivot.current.rotation.z,
+        -px * 0.09 - vx * 0.07 * walkAmp.current,
+        4,
+        delta,
+      )
       pivot.current.rotation.y = MathUtils.damp(pivot.current.rotation.y, px * 0.16, 4, delta)
       pivot.current.rotation.x = MathUtils.damp(pivot.current.rotation.x, -py * 0.05, 4, delta)
+      pivot.current.scale.x = MathUtils.damp(pivot.current.scale.x, facing.current, 9, delta)
     }
   })
 
   return (
-    <group position={[x, 0, 0.2]}>
+    <group ref={group} position={[x, 0, 0.2]}>
       {/* Pivot am Fußpunkt, damit die Neigung natürlich wirkt */}
       <group ref={pivot}>
         <mesh ref={mesh} position={[0, HEIGHT / 2, 0]}>
           <planeGeometry args={[WIDTH, HEIGHT]} />
-          <meshBasicMaterial map={texture} transparent alphaTest={0.5} />
+          {/* DoubleSide: beim Flip (scale.x = -1) dreht sich die Winding-Order */}
+          <meshBasicMaterial map={texture} transparent alphaTest={0.5} side={DoubleSide} />
         </mesh>
       </group>
       {/* Kontaktschatten */}

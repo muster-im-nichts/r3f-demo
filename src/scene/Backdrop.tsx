@@ -1,35 +1,41 @@
 import { useEffect, useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import type { MeshBasicMaterial } from 'three'
+import type { MeshBasicMaterial, Texture } from 'three'
 import { useSceneTexture } from './textures'
 import type { EpochId } from '../game/types'
-import { PARALLAX_X, PARALLAX_Y } from './CameraRig'
+import { PARALLAX_X } from './CameraRig'
 
-const BACKDROP_Z = -10
-const FADE_Z = -9.98
+export const BACKDROP_Z = -7
+const FADE_Z = -6.98
 const CAMERA_Z = 6
 const FOV = 45
-const TEX_ASPECT = 192 / 108 // 16:9, wie die Platzhalter und Szenen-PNGs
 const FADE_SECONDS = 0.8
+/** Unterkante des Bilds knapp unter dem Bühnenboden — kaum toter Boden davor */
+const BOTTOM_Y = -0.35
+/** Mindesthöhe, damit breite Bilder im Hochformat nicht zum Streifen werden */
+const MIN_HEIGHT = 5.6
 
 /**
- * Plane-Größe so, dass sie das Frustum plus Parallax-Spielraum in jedem
- * Seitenverhältnis abdeckt (cover), ohne die Textur zu verzerren.
+ * Das Bild wird an der Breite ausgerichtet (Sichtfeld + Parallax-Reserve)
+ * statt das ganze Frustum zu füllen — deutlich weniger gezoomt. Das
+ * Seitenverhältnis kommt aus der geladenen Textur, nichts wird verzerrt.
  */
-function usePlaneSize(): [number, number] {
+function usePlaneSize(texture: Texture): [number, number] {
   const viewportAspect = useThree(s => s.viewport.aspect)
+  const img = texture.image as { width?: number; height?: number } | undefined
+  const texAspect = img?.width && img?.height ? img.width / img.height : 16 / 9
   const dist = CAMERA_Z - BACKDROP_Z
-  const neededH = 2 * Math.tan((FOV * Math.PI) / 360) * dist + PARALLAX_Y * 4
-  const neededW = neededH * Math.max(viewportAspect, 1) + PARALLAX_X * 4
-  const width = Math.max(neededW, neededH * TEX_ASPECT)
-  return [width, width / TEX_ASPECT]
+  const halfH = Math.tan((FOV * Math.PI) / 360) * dist
+  const fitWidth = 2 * halfH * Math.max(viewportAspect, 0.4) + PARALLAX_X * 4 + 0.8
+  const width = Math.max(fitWidth, MIN_HEIGHT * texAspect)
+  return [width, width / texAspect]
 }
 
 function BackdropPlane({ epoch, scene, z }: { epoch: EpochId; scene: string; z: number }) {
   const texture = useSceneTexture(epoch, scene)
-  const [width, height] = usePlaneSize()
+  const [width, height] = usePlaneSize(texture)
   return (
-    <mesh position={[0, height / 2 - 1.5, z]}>
+    <mesh position={[0, height / 2 + BOTTOM_Y, z]}>
       <planeGeometry args={[width, height]} />
       <meshBasicMaterial map={texture} />
     </mesh>
@@ -38,7 +44,7 @@ function BackdropPlane({ epoch, scene, z }: { epoch: EpochId; scene: string; z: 
 
 function FadingPlane({ epoch, scene, onDone }: { epoch: EpochId; scene: string; onDone: () => void }) {
   const texture = useSceneTexture(epoch, scene)
-  const [width, height] = usePlaneSize()
+  const [width, height] = usePlaneSize(texture)
   const material = useRef<MeshBasicMaterial>(null)
   const done = useRef(false)
 
@@ -52,7 +58,7 @@ function FadingPlane({ epoch, scene, onDone }: { epoch: EpochId; scene: string; 
   })
 
   return (
-    <mesh position={[0, height / 2 - 1.5, FADE_Z]} renderOrder={1}>
+    <mesh position={[0, height / 2 + BOTTOM_Y, FADE_Z]} renderOrder={1}>
       <planeGeometry args={[width, height]} />
       <meshBasicMaterial ref={material} map={texture} transparent opacity={0} depthWrite={false} />
     </mesh>

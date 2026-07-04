@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { CanvasTexture } from 'three'
 import { CameraRig } from './CameraRig'
 import { Backdrop } from './Backdrop'
 import { Avatar } from './Avatar'
@@ -8,6 +9,25 @@ import { Curtain } from './Curtain'
 import { Atmosphere } from './Atmosphere'
 import type { Character, EpochId } from '../game/types'
 import { getEpoch } from '../game/epochs'
+
+// Dunkler Verlauf, der die Kante zwischen Hintergrundbild und Bühnenboden
+// kaschiert (liegt flach auf dem Boden, hinten satt, nach vorn auslaufend)
+let apronTexture: CanvasTexture | null = null
+
+function getApronTexture(): CanvasTexture {
+  if (apronTexture) return apronTexture
+  const canvas = document.createElement('canvas')
+  canvas.width = 8
+  canvas.height = 64
+  const ctx = canvas.getContext('2d')!
+  const grad = ctx.createLinearGradient(0, 0, 0, 64)
+  grad.addColorStop(0, 'rgba(8, 6, 14, 0.95)')
+  grad.addColorStop(1, 'rgba(8, 6, 14, 0)')
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, 8, 64)
+  apronTexture = new CanvasTexture(canvas)
+  return apronTexture
+}
 
 /**
  * Die Theaterbühne: Matte-Painting hinten, Requisiten im Mittelgrund,
@@ -20,12 +40,14 @@ export function Stage({
   character,
   speech,
   curtainClosed,
+  onExitStage,
 }: {
   epoch: EpochId
   scene: string
   character: Character
   speech?: string
   curtainClosed: boolean
+  onExitStage?: (direction: 'left' | 'right') => void
 }) {
   const lightColor = getEpoch(epoch).mood.light
   return (
@@ -38,15 +60,21 @@ export function Stage({
         <CameraRig />
         <Backdrop epoch={epoch} scene={scene} />
         <Props scene={scene} />
-        <Avatar character={character} speech={speech} />
+        <Avatar character={character} speech={speech} scene={scene} onExitStage={onExitStage} />
         <Atmosphere color={lightColor} />
         <Curtain closed={curtainClosed} />
 
-        {/* Bühnenboden: nimmt das warme Laternenlicht auf */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -2]}>
-          <planeGeometry args={[40, 18]} />
-          <meshStandardMaterial color="#241d2e" />
+        {/* Bühnenboden: dunkel, endet am Backdrop */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+          <planeGeometry args={[40, 14]} />
+          <meshStandardMaterial color="#171221" />
         </mesh>
+        {/* Kaschier-Verlauf vor dem Hintergrundbild */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, -5.4]} renderOrder={1}>
+          <planeGeometry args={[40, 3.2]} />
+          <meshBasicMaterial map={getApronTexture()} transparent depthWrite={false} />
+        </mesh>
+
         <ambientLight intensity={0.7} />
         <pointLight position={[-2.5, 2.2, 1.5]} intensity={6} color={lightColor} />
         <pointLight position={[3, 1.8, 0.5]} intensity={3} color={lightColor} />

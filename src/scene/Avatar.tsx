@@ -1,15 +1,19 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import { CanvasTexture, DoubleSide, MathUtils, type Group, type Mesh } from 'three'
 import { spriteTexture, SPRITE_ASPECT } from './sprites'
-import { MOVE_KEYS } from './moveKeys'
+import { MOVE_KEYS, moveInput } from './moveKeys'
+import { getColliders } from './propSets'
 import type { Character } from '../game/types'
 
 const WALK_SPEED = 1.7
 const DEPTH_SPEED = 1.2
 const Z_MIN = -1.4 // hinten, kurz vor den Props
 const Z_MAX = 0.9 // vorn an der Rampe
+const AVATAR_RADIUS = 0.24
+/** Wie weit man hinter dem Bühnenrand weiterläuft, bevor die Szene wechselt */
+const EXIT_OVERSHOOT = 1.0
 
 let shadowTexture: CanvasTexture | null = null
 
@@ -36,42 +40,55 @@ const PX_PER_UNIT = 100
 const DISTANCE_FACTOR = 400 / PX_PER_UNIT
 
 /**
- * Pixel-Sprite-Billboard auf dem Bühnenboden, mit leichter Idle-Animation
- * (Atmen mit Boden-Kompensation + minimales Sway) und optionaler Sprechblase.
+ * Pixel-Sprite-Billboard: läuft per Pfeiltasten/WASD/Touch über die Bühne
+ * (mit Requisiten-Kollision), folgt der Maus mit leichter Neigung und kann
+ * links/rechts aus dem Bild in die Nachbarszene laufen.
  */
-export function Avatar({ character, speech }: { character: Character; speech?: string }) {
+export function Avatar({
+  character,
+  speech,
+  scene,
+  onExitStage,
+}: {
+  character: Character
+  speech?: string
+  scene: string
+  onExitStage?: (direction: 'left' | 'right') => void
+}) {
   const mesh = useRef<Mesh>(null)
   const texture = spriteTexture(character)
   // Auf schmalen Screens (Hochformat) rückt der Avatar Richtung Mitte,
   // sonst steht er außerhalb des Sichtfelds
   const viewportWidth = useThree(s => s.viewport.width)
   const x = MathUtils.clamp(-viewportWidth * 0.22, -1.1, -0.45)
-  // Hochformat: Blase höher, damit sie nicht in die Textbox ragt
+  // Hochformat: Blase höher und kompakter, damit sie nicht in die Textbox ragt
   const narrow = viewportWidth < 3
-  const bubbleY = narrow ? HEIGHT + 0.95 : HEIGHT + 0.45
+  const bubbleY = narrow ? HEIGHT + 1.1 : HEIGHT + 0.45
 
   const pivot = useRef<Group>(null)
   const group = useRef<Group>(null)
 
-  // Laufen mit Pfeiltasten/WASD
-  const pressed = useRef(new Set<string>())
   const pos = useRef({ x, z: 0.2 })
   const facing = useRef(1) // 1 = rechts, -1 = links
   const walkPhase = useRef(0)
   const walkAmp = useRef(0)
+  const pendingExit = useRef<'left' | 'right' | null>(null)
+  const xLimit = Math.min(3.2, Math.max(0.9, viewportWidth / 2 - 0.55))
+  const colliders = useMemo(() => getColliders(scene), [scene])
 
+  // Tastatur → gemeinsamer Bewegungs-Zustand (Touch-Buttons schreiben ihn auch)
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       const dir = MOVE_KEYS[e.key.toLowerCase()]
       if (!dir) return
-      pressed.current.add(dir)
+      moveInput.add(dir)
       if (e.key.startsWith('Arrow')) e.preventDefault()
     }
     const up = (e: KeyboardEvent) => {
       const dir = MOVE_KEYS[e.key.toLowerCase()]
-      if (dir) pressed.current.delete(dir)
+      if (dir) moveInput.delete(dir)
     }
-    const clear = () => pressed.current.clear()
+    const clear = () => moveInput.clear()
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
     window.addEventListener('blur', clear)
@@ -82,17 +99,47 @@ export function Avatar({ character, speech }: { character: Character; speech?: s
     }
   }, [])
 
+  // Nach einem Szenenwechsel durch Rauslaufen: von der Gegenseite auftreten
+  useEffect(() => {
+    if (!pendingExit.current) return
+    pos.current.x = pendingExit.current === 'right' ? -(xLimit + 0.85) : xLimit + 0.85
+    pendingExit.current = null
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene])
+
   useFrame((state, delta) => {
     if (!mesh.current) return
     const t = state.clock.elapsedTime
 
-    // Bewegung integrieren, an Sichtfeld und Bühnentiefe geclampt
-    const keys = pressed.current
-    const vx = (keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0)
-    const vz = (keys.has('front') ? 1 : 0) - (keys.has('back') ? 1 : 0)
-    const xLimit = Math.min(3.2, Math.max(0.9, viewportWidth / 2 - 0.55))
-    pos.current.x = MathUtils.clamp(pos.current.x + vx * WALK_SPEED * delta, -xLimit, xLimit)
+    // Bewegung integrieren
+    const vx = (moveInput.has('right') ? 1 : 0) - (moveInput.has('left') ? 1 : 0)
+    const vz = (moveInput.has('front') ? 1 : 0) - (moveInput.has('back') ? 1 : 0)
+    pos.current.x = MathUtils.clamp(
+      pos.current.x + vx * WALK_SPEED * delta,
+      -(xLimit + EXIT_OVERSHOOT + 0.4),
+      xLimit + EXIT_OVERSHOOT + 0.4,
+    )
     pos.current.z = MathUtils.clamp(pos.current.z + vz * DEPTH_SPEED * delta, Z_MIN, Z_MAX)
+
+    // Kollision: aus Requisiten-Kreisen herausschieben
+    for (const c of colliders) {
+      const dx = pos.current.x - c.x
+      const dz = pos.current.z - c.z
+      const rr = c.r + AVATAR_RADIUS
+      const d2 = dx * dx + dz * dz
+      if (d2 < rr * rr && d2 > 1e-6) {
+        const d = Math.sqrt(d2)
+        pos.current.x = c.x + (dx / d) * rr
+        pos.current.z = MathUtils.clamp(c.z + (dz / d) * rr, Z_MIN, Z_MAX)
+      }
+    }
+
+    // Aus dem Bild gelaufen → Nachbarszene anfordern
+    if (!pendingExit.current && Math.abs(pos.current.x) > xLimit + EXIT_OVERSHOOT && onExitStage) {
+      pendingExit.current = pos.current.x > 0 ? 'right' : 'left'
+      onExitStage(pendingExit.current)
+    }
+
     if (vx !== 0) facing.current = vx
     if (group.current) group.current.position.set(pos.current.x, 0, pos.current.z)
 
@@ -141,21 +188,21 @@ export function Avatar({ character, speech }: { character: Character; speech?: s
       {speech && (
         <Html
           transform
-          position={[0.35, bubbleY, 0.05]}
+          position={[narrow ? 0 : 0.35, bubbleY, 0.05]}
           distanceFactor={DISTANCE_FACTOR}
           pointerEvents="none"
           style={{ opacity: 0.95 }}
         >
           <div
             style={{
-              maxWidth: `${Math.round(MathUtils.clamp((viewportWidth - 1) * PX_PER_UNIT, 170, 260))}px`,
+              maxWidth: `${Math.round(MathUtils.clamp((viewportWidth - 1.2) * PX_PER_UNIT, 140, 260))}px`,
               background: '#f5efdc',
               color: '#2a2118',
               border: '3px solid #2a2118',
               borderRadius: '10px',
-              padding: '10px 14px',
+              padding: narrow ? '7px 10px' : '10px 14px',
               fontFamily: 'var(--font-text)',
-              fontSize: '20px',
+              fontSize: narrow ? '16px' : '20px',
               lineHeight: 1.15,
               textAlign: 'center',
               whiteSpace: 'normal',

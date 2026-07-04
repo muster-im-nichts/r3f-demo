@@ -51,16 +51,18 @@ export function AdventureBox({
         border: '3px solid var(--color-panel-border)',
         borderRadius: '10px',
         boxShadow: '0 0 0 2px #000, 0 12px 30px rgba(0,0,0,0.6)',
-        padding: '14px 18px 12px',
+        padding: 'clamp(10px, 1.6vw, 14px) clamp(12px, 2vw, 18px) 12px',
+        maxHeight: '42dvh',
+        overflowY: 'auto',
         zIndex: 3,
       }}
     >
       <p
         style={{
           fontFamily: 'var(--font-text)',
-          fontSize: 'clamp(19px, 2.4dvh + 8px, 24px)',
+          fontSize: 'clamp(16px, 4.4vw, 24px)',
           lineHeight: 1.25,
-          minHeight: '3.75em',
+          minHeight: 'min(3.75em, 15dvh)',
           color: 'var(--color-text)',
         }}
       >
@@ -95,7 +97,7 @@ export function AdventureBox({
               borderRadius: '6px',
               color: 'var(--color-text)',
               fontFamily: 'var(--font-text)',
-              fontSize: 'clamp(18px, 2.2dvh + 8px, 22px)',
+              fontSize: 'clamp(15px, 4vw, 22px)',
               padding: '6px 10px',
               marginBottom: '2px',
             }}

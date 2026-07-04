@@ -19,12 +19,16 @@ export function CameraRig() {
 
   useFrame((state, delta) => {
     const aspect = state.viewport.aspect
-    // Totzone: halbe Sichtbreite auf Avatar-Tiefe, davon ~55 %
     const halfW = Math.tan((FOV * Math.PI) / 360) * (BASE.z - avatarPos.z) * aspect
-    const margin = halfW * 0.55
+    // Look-Ahead: die Kamera hält Raum in Blick-/Laufrichtung frei — je
+    // schmaler der Screen, desto stärker (Handy: Figur steht im hinteren
+    // Drittel, vorn ist Platz)
+    const lead = avatarPos.dirX * halfW * MathUtils.clamp(1.15 - aspect * 0.5, 0.15, 0.8)
+    const margin = halfW * MathUtils.clamp(0.25 + aspect * 0.19, 0.3, 0.55)
+    const target = avatarPos.x + lead
     let f = follow.current
-    if (avatarPos.x - f > margin) f = avatarPos.x - margin
-    else if (avatarPos.x - f < -margin) f = avatarPos.x + margin
+    if (target - f > margin) f = target - margin
+    else if (target - f < -margin) f = target + margin
     follow.current = MathUtils.clamp(f, -followRange(aspect), followRange(aspect))
 
     if (cameraCut.pending) {
@@ -35,7 +39,7 @@ export function CameraRig() {
       look.current = follow.current
       state.camera.position.x = follow.current
     } else {
-      look.current = MathUtils.damp(look.current, follow.current, 3, delta)
+      look.current = MathUtils.damp(look.current, follow.current, 4, delta)
     }
 
     const t = state.clock.elapsedTime
@@ -44,7 +48,7 @@ export function CameraRig() {
       look.current + MathUtils.clamp(state.pointer.x, -1, 1) * PARALLAX_X + drift
     const targetY = BASE.y + MathUtils.clamp(state.pointer.y, -1, 1) * PARALLAX_Y
 
-    state.camera.position.x = MathUtils.damp(state.camera.position.x, targetX, 3, delta)
+    state.camera.position.x = MathUtils.damp(state.camera.position.x, targetX, 4, delta)
     state.camera.position.y = MathUtils.damp(state.camera.position.y, targetY, 3, delta)
     state.camera.position.z = BASE.z
     state.camera.lookAt(look.current, LOOK_AT_Y, 0)

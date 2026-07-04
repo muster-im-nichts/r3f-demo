@@ -4,7 +4,7 @@ import { Html } from '@react-three/drei'
 import { CanvasTexture, DoubleSide, MathUtils, Vector3, type Group, type Mesh } from 'three'
 import { spriteTexture, SPRITE_ASPECT } from './sprites'
 import { MOVE_KEYS, moveInput } from './moveKeys'
-import { getArrivalX, getColliders, stageSqueeze } from './propSets'
+import { getColliders, stageSqueeze } from './propSets'
 import { avatarPos, cameraCut } from './avatarState'
 import { followRange } from './cameraConfig'
 import type { Character } from '../game/types'
@@ -26,6 +26,7 @@ const FOV = 45
 const NDC_LEAVING = 0.9 // Props versinken: Figur fast am Bildrand, auswärts
 const NDC_RETURN = 0.72 // Props kommen zurück: wieder klar im Bild
 const NDC_EXIT = 1.15 // Szenenwechsel: Figur ist sichtbar aus dem Bild
+const NDC_ARRIVE = 0.55 // Auto-Walk endet ~1/3 hinter der Schwelle, dann übernimmt der Spieler
 
 const projected = new Vector3()
 
@@ -215,23 +216,20 @@ export function Avatar({
       }
     }
 
-    // Ankunft in der Zielszene: neben dem NPC stehen bleiben
-    if (autoWalk && transitStage.current === 'in' && !arrivedNotified.current) {
-      const arrival = getArrivalX(scene, squeeze, autoWalk)
-      if (
-        (autoWalk === 'right' && pos.current.x >= arrival) ||
-        (autoWalk === 'left' && pos.current.x <= arrival)
-      ) {
-        pos.current.x = arrival
-        arrivedNotified.current = true
-        onArrived?.()
-      }
-    }
 
     // Wo steht die Figur im Bild? (NDC-x: -1 = linker Rand, +1 = rechter)
     projected.set(pos.current.x, 1.0, pos.current.z).project(state.camera)
     const ndcX = projected.x
     const absNdc = Math.abs(ndcX)
+
+    // Ankunft in der Zielszene: kurz hinter der Schwelle stoppen (~1/3 im
+    // Bild) — danach hat der Spieler sofort wieder die Kontrolle
+    if (autoWalk && transitStage.current === 'in' && !arrivedNotified.current) {
+      if (absNdc <= NDC_ARRIVE) {
+        arrivedNotified.current = true
+        onArrived?.()
+      }
+    }
 
     // Requisiten-Abgang nur bei klarer Auswärtsbewegung an den Bildrand,
     // Rückkehr bei Einwärtsbewegung oder deutlich im Bild — mit Hysterese
@@ -257,6 +255,7 @@ export function Avatar({
     if (group.current) group.current.position.set(pos.current.x, 0, pos.current.z)
     avatarPos.x = pos.current.x
     avatarPos.z = pos.current.z
+    avatarPos.dirX = facing.current
 
     // Geh-Wippen (weich ein-/ausblendend) + Atmen
     walkAmp.current = MathUtils.damp(walkAmp.current, moving ? 1 : 0, 8, delta)

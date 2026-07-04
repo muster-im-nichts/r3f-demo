@@ -92,20 +92,6 @@ export function stageSqueeze(viewportWidth: number): number {
   return Math.min(1, Math.max(0.55, viewportWidth / 8))
 }
 
-/**
- * Wo der Auto-Walk in einer Szene enden soll: in guter Konstellation neben
- * dem NPC (Blick zu ihm), sonst leicht neben der Bühnenmitte.
- */
-export function getArrivalX(scene: string, squeeze: number, direction: 'left' | 'right'): number {
-  const npc = (PROP_SETS[scene] ?? []).find(def => def.npc)
-  if (npc) {
-    const nx = npc.position[0] * squeeze
-    const x = direction === 'right' ? nx - 0.95 : nx + 0.95
-    return Math.min(1.4, Math.max(-1.4, x))
-  }
-  return direction === 'right' ? -0.35 : 0.35
-}
-
 /** x/z-Kreis-Collider der Szene (für die Avatar-Bewegung). */
 export function getColliders(scene: string, squeeze = 1): Collider[] {
   return (PROP_SETS[scene] ?? [])

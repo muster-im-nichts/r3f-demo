@@ -58,10 +58,16 @@ export function NpcFigure({ npc }: { npc: NpcSpec }) {
           <meshBasicMaterial map={texture} transparent alphaTest={0.5} side={DoubleSide} />
         </mesh>
       </group>
-      {/* Namensschild */}
-      <mesh position={[0, height + 0.22, 0]} renderOrder={2}>
+      {/* Namensschild — immer im Vordergrund (kein Depth-Test, spät gezeichnet) */}
+      <mesh position={[0, height + 0.22, 0]} renderOrder={10}>
         <planeGeometry args={[LABEL_HEIGHT * label.aspect, LABEL_HEIGHT]} />
-        <meshBasicMaterial ref={labelMaterial} map={label.texture} transparent depthWrite={false} />
+        <meshBasicMaterial
+          ref={labelMaterial}
+          map={label.texture}
+          transparent
+          depthWrite={false}
+          depthTest={false}
+        />
       </mesh>
     </group>
   )

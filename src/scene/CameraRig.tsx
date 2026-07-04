@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { MathUtils } from 'three'
-import { avatarPos } from './avatarState'
+import { avatarPos, cameraCut } from './avatarState'
 import { followRange, PARALLAX_X, PARALLAX_Y } from './cameraConfig'
 
 const BASE = { x: 0, y: 1.4, z: 6 }
@@ -26,7 +26,17 @@ export function CameraRig() {
     if (avatarPos.x - f > margin) f = avatarPos.x - margin
     else if (avatarPos.x - f < -margin) f = avatarPos.x + margin
     follow.current = MathUtils.clamp(f, -followRange(aspect), followRange(aspect))
-    look.current = MathUtils.damp(look.current, follow.current, 3, delta)
+
+    if (cameraCut.pending) {
+      // Figur wurde beim Szenenwechsel auf die Gegenseite versetzt: hart auf
+      // die Eintrittsseite schneiden, damit der folgende Schwenk mit der
+      // Laufrichtung geht statt dagegen
+      cameraCut.pending = false
+      look.current = follow.current
+      state.camera.position.x = follow.current
+    } else {
+      look.current = MathUtils.damp(look.current, follow.current, 3, delta)
+    }
 
     const t = state.clock.elapsedTime
     const drift = Math.sin(t * 0.25) * 0.05

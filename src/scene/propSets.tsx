@@ -77,12 +77,22 @@ export const PROP_SETS: Record<string, PropDef[]> = {
 
 export type Collider = { x: number; z: number; r: number }
 
+/**
+ * Die Prop-Positionen sind für die breite Desktop-Bühne gesetzt. Auf schmalen
+ * Screens rücken sie horizontal Richtung Mitte, damit NPCs & Co. nicht am
+ * oder hinterm Bildrand stehen. Muss überall gleich verwendet werden
+ * (Darstellung + Collider), sonst stimmen die Kollisionen nicht.
+ */
+export function stageSqueeze(viewportWidth: number): number {
+  return Math.min(1, Math.max(0.55, viewportWidth / 8))
+}
+
 /** x/z-Kreis-Collider der Szene (für die Avatar-Bewegung). */
-export function getColliders(scene: string): Collider[] {
+export function getColliders(scene: string, squeeze = 1): Collider[] {
   return (PROP_SETS[scene] ?? [])
     .filter(def => def.r !== undefined)
     .map(def => ({
-      x: def.position[0],
+      x: def.position[0] * squeeze,
       z: def.position[2],
       r: def.r! * (def.scale ?? 1),
     }))

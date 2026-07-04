@@ -4,8 +4,8 @@ import { Html } from '@react-three/drei'
 import { CanvasTexture, DoubleSide, MathUtils, type Group, type Mesh } from 'three'
 import { spriteTexture, SPRITE_ASPECT } from './sprites'
 import { MOVE_KEYS, moveInput } from './moveKeys'
-import { getColliders } from './propSets'
-import { avatarPos } from './avatarState'
+import { getColliders, stageSqueeze } from './propSets'
+import { avatarPos, cameraCut } from './avatarState'
 import type { Character } from '../game/types'
 
 const WALK_SPEED = 1.7
@@ -79,7 +79,8 @@ export function Avatar({
   const pendingExit = useRef<'left' | 'right' | null>(null)
   const wasLeaving = useRef(false)
   const xLimit = Math.min(3.2, Math.max(0.9, viewportWidth / 2 - 0.55))
-  const colliders = useMemo(() => getColliders(scene), [scene])
+  const squeeze = stageSqueeze(viewportWidth)
+  const colliders = useMemo(() => getColliders(scene, squeeze), [scene, squeeze])
 
   // Sprechblase nach einer Weile ausblenden (länge-abhängig), dann abbauen
   const [bubble, setBubble] = useState<'show' | 'fade' | 'off'>('show')
@@ -122,6 +123,8 @@ export function Avatar({
   useEffect(() => {
     if (!pendingExit.current) return
     pos.current.x = pendingExit.current === 'right' ? -(xLimit + 0.85) : xLimit + 0.85
+    avatarPos.x = pos.current.x
+    cameraCut.pending = true // harter Schnitt statt Gegenschwenk
     pendingExit.current = null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene])

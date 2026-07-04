@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import type { Group } from 'three'
-import { PROP_SETS, type PropDef } from './propSets'
+import { PROP_SETS, stageSqueeze, type PropDef } from './propSets'
 
 /**
  * Szenen-Requisiten im Mittelgrund. Verlässt der Spieler die Bühne, versinken
@@ -37,6 +37,8 @@ function AnimatedProp({
   onDone?: () => void
 }) {
   const group = useRef<Group>(null)
+  // Auf schmalen Screens rücken die Props Richtung Bühnenmitte
+  const squeeze = stageSqueeze(useThree(s => s.viewport.width))
   const elapsed = useRef(0)
   const finished = useRef(false)
 
@@ -60,7 +62,11 @@ function AnimatedProp({
   return (
     <group
       ref={group}
-      position={[def.position[0], def.position[1] - (mode === 'enter' ? SINK : 0), def.position[2]]}
+      position={[
+        def.position[0] * squeeze,
+        def.position[1] - (mode === 'enter' ? SINK : 0),
+        def.position[2],
+      ]}
       rotation={[0, def.rotationY ?? 0, 0]}
       scale={def.scale ?? 1}
       visible={mode === 'exit'}

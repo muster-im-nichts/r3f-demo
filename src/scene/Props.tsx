@@ -112,17 +112,14 @@ function PropGroup({
 }
 
 /**
- * Sequenzer: `leaving` (Spieler läuft gerade aus dem Bild) startet den
- * Abgang sofort — kehrt er um, kommen die Props zurück. Ein Szenenwechsel
- * wartet, bis die alte Bühne leer ist. Solange der Spieler noch im
- * Randbereich steht, bleibt die neue Bühne `hidden` (nichts poppt rein);
- * erst wenn er ins Bild läuft, fahren die neuen Props hoch.
+ * Sequenzer: `leaving` (klare Auswärtsbewegung über die Bühnenkante, vom
+ * Avatar mit Hysterese gemeldet) startet den Abgang — kehrt der Spieler um,
+ * kommen die Props zurück. Beim Szenenwechsel wird die neue Bühne sofort
+ * bespielt; ist der alte Abgang noch nicht durch, läuft er erst zu Ende.
  */
-type StageMode = 'enter' | 'exit' | 'hidden'
-
 export function Props({ scene, leaving }: { scene: string; leaving: boolean }) {
   const [shown, setShown] = useState(scene)
-  const [mode, setMode] = useState<StageMode>('enter')
+  const [mode, setMode] = useState<'enter' | 'exit'>('enter')
   const exited = useRef(false)
 
   useEffect(() => {
@@ -131,18 +128,17 @@ export function Props({ scene, leaving }: { scene: string; leaving: boolean }) {
       if (leaving && mode === 'enter') {
         exited.current = false
         setMode('exit')
-      } else if (!leaving && mode !== 'enter') {
+      } else if (!leaving && mode === 'exit') {
         exited.current = false
         setMode('enter')
       }
       return
     }
-    // Szenenwechsel: erst die alte Bühne leeren; ist sie schon leer,
-    // direkt umschalten
-    if (exited.current || mode === 'hidden') {
+    // Szenenwechsel: alte Bühne fertig leeren, dann sofort die neue bespielen
+    if (exited.current) {
       exited.current = false
       setShown(scene)
-      setMode(leaving ? 'hidden' : 'enter')
+      setMode('enter')
     } else if (mode !== 'exit') {
       setMode('exit')
     }
@@ -153,13 +149,10 @@ export function Props({ scene, leaving }: { scene: string; leaving: boolean }) {
     if (scene !== shown) {
       exited.current = false
       setShown(scene)
-      setMode(leaving ? 'hidden' : 'enter')
-    } else if (leaving) {
-      setMode('hidden')
+      setMode('enter')
     }
   }
 
-  if (mode === 'hidden') return null
   return (
     <PropGroup
       key={`${shown}-${mode}`}

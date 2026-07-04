@@ -119,13 +119,16 @@ export function Avatar({
     }
   }, [])
 
-  // Nach einem Szenenwechsel durch Rauslaufen: von der Gegenseite auftreten
+  // Nach einem Szenenwechsel durch Rauslaufen: von der Gegenseite auftreten.
+  // Die neue Bühne gilt sofort als betreten — Props fahren direkt hoch.
   useEffect(() => {
     if (!pendingExit.current) return
     pos.current.x = pendingExit.current === 'right' ? -(xLimit + 0.85) : xLimit + 0.85
     avatarPos.x = pos.current.x
     cameraCut.pending = true // harter Schnitt statt Gegenschwenk
     pendingExit.current = null
+    wasLeaving.current = false
+    onLeavingStage?.(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene])
 
@@ -171,8 +174,14 @@ export function Avatar({
       }
     }
 
-    // Am Bühnenrand: Requisiten schon mal versenken (bzw. zurückholen)
-    const leaving = Math.abs(pos.current.x) > xLimit - 0.05
+    // Requisiten-Abgang nur bei klarer Auswärtsbewegung über die Kante,
+    // Rückkehr bei Einwärtsbewegung oder deutlich im Bild — mit Hysterese
+    // dazwischen (Stillstand hält den Zustand), damit nichts flackert
+    const absX = Math.abs(pos.current.x)
+    const movingOutward = vx !== 0 && Math.sign(vx) === Math.sign(pos.current.x || 1)
+    let leaving = wasLeaving.current
+    if (movingOutward && absX > xLimit + 0.1) leaving = true
+    else if ((vx !== 0 && !movingOutward) || absX < xLimit - 0.15) leaving = false
     if (leaving !== wasLeaving.current) {
       wasLeaving.current = leaving
       onLeavingStage?.(leaving)

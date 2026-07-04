@@ -76,7 +76,7 @@ export function TouchControls() {
       style={{
         position: 'absolute',
         right: '16px',
-        bottom: isNarrowScreen() ? 'calc(26dvh + 24px)' : 'calc(42dvh + 24px)',
+        bottom: isNarrowScreen() ? 'calc(22dvh + 24px)' : 'calc(34dvh + 24px)',
         width: `${BASE}px`,
         height: `${BASE}px`,
         borderRadius: '50%',

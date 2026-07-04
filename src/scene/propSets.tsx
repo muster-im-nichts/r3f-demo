@@ -26,10 +26,13 @@ export type PropDef = {
   npc?: boolean
 }
 
+// Wichtig: Die vorderste Lauf-Spur (z >= 0.8) bleibt in allen Szenen frei —
+// Collider-Vorderkante (z + r + Avatar-Radius) muss unter 0.8 bleiben, damit
+// reines Seitwärtslaufen nie an Requisiten hängen bleibt.
 export const PROP_SETS: Record<string, PropDef[]> = {
   marktplatz: [
     { node: <MarketStall />, position: [2.0, 0, -1.3], rotationY: -0.25, r: 0.95 },
-    { node: <Barrel />, position: [0.75, 0, 0.35], r: 0.38 },
+    { node: <Barrel />, position: [0.75, 0, 0.15], r: 0.38 },
     // Kiste hinten lassen: vorn an der Rampe muss eine Lauf-Gasse frei bleiben
     { node: <Crate />, position: [2.9, 0, -0.55], rotationY: 0.4, r: 0.42 },
     { node: <Lantern />, position: [-2.8, 0, -1.0], r: 0.22 },
@@ -38,7 +41,7 @@ export const PROP_SETS: Record<string, PropDef[]> = {
   werkstatt: [
     { node: <Workbench />, position: [1.5, 0, -0.6], rotationY: 0.15, r: 0.78 },
     { node: <GrandfatherClock />, position: [2.7, 0, -1.4], rotationY: -0.3, r: 0.42 },
-    { node: <Stool />, position: [0.65, 0, 0.35], r: 0.3 },
+    { node: <Stool />, position: [0.65, 0, 0.2], r: 0.3 },
     { node: <NpcFigure npc={NPCS.karl} />, position: [0.35, 0, -0.95], r: 0.3, npc: true },
   ],
   wachstube: [
@@ -50,7 +53,7 @@ export const PROP_SETS: Record<string, PropDef[]> = {
   gasse: [
     { node: <Barrel />, position: [1.15, 0, -0.35], r: 0.38 },
     { node: <Barrel />, position: [1.75, 0, -0.85], scale: 0.85, r: 0.38 },
-    { node: <Crate />, position: [2.5, 0, 0.1], rotationY: 0.3, r: 0.42 },
+    { node: <Crate />, position: [2.5, 0, 0.0], rotationY: 0.3, r: 0.42 },
     { node: <Lantern />, position: [-2.7, 0, -1.3], r: 0.22 },
     { node: <NpcFigure npc={NPCS.kraehe} />, position: [-1.7, 0, -1.0], r: 0.3, npc: true },
   ],
@@ -63,8 +66,8 @@ export const PROP_SETS: Record<string, PropDef[]> = {
     { node: <NpcFigure npc={NPCS.kraehe} />, position: [0.9, 0, -1.05], r: 0.3, npc: true },
   ],
   kanal: [
-    { node: <Bollard />, position: [0.9, 0, 0.5], r: 0.2 },
-    { node: <Bollard />, position: [2.1, 0, 0.15], r: 0.2 },
+    { node: <Bollard />, position: [0.9, 0, 0.25], r: 0.2 },
+    { node: <Bollard />, position: [2.1, 0, 0.1], r: 0.2 },
     { node: <Crate />, position: [2.9, 0, -0.7], rotationY: 0.5, r: 0.42 },
     { node: <Lantern />, position: [-2.8, 0, -0.9], r: 0.22 },
     { node: <NpcFigure npc={NPCS.junge} />, position: [-1.5, 0, -0.75], r: 0.28, npc: true },
@@ -72,7 +75,7 @@ export const PROP_SETS: Record<string, PropDef[]> = {
   muehle: [
     { node: <Gear />, position: [2.7, 0, -1.3], r: 0.6 },
     { node: <Sacks />, position: [1.25, 0, -0.25], r: 0.52 },
-    { node: <Barrel />, position: [2.0, 0, 0.35], scale: 0.9, r: 0.38 },
+    { node: <Barrel />, position: [2.0, 0, 0.15], scale: 0.9, r: 0.38 },
     { node: <NpcFigure npc={NPCS.mueller} />, position: [0.5, 0, -0.9], r: 0.3, npc: true },
   ],
 }

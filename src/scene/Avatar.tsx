@@ -12,6 +12,8 @@ const WALK_SPEED = 1.7
 const DEPTH_SPEED = 1.2
 const Z_MIN = -1.4 // hinten, kurz vor den Props
 const Z_MAX = 0.9 // vorn an der Rampe
+/** Start auf der freien Front-Spur: Seitwärtslaufen bleibt kollisionsfrei */
+const START_Z = 0.8
 const AVATAR_RADIUS = 0.24
 /** Wie weit man hinter dem Bühnenrand weiterläuft, bevor die Szene wechselt */
 const EXIT_OVERSHOOT = 1.0
@@ -77,7 +79,7 @@ export function Avatar({
   const pivot = useRef<Group>(null)
   const group = useRef<Group>(null)
 
-  const pos = useRef({ x, z: 0.2 })
+  const pos = useRef({ x, z: START_Z })
   const facing = useRef(1) // 1 = rechts, -1 = links
   const walkPhase = useRef(0)
   const walkAmp = useRef(0)

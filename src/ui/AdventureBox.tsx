@@ -88,7 +88,7 @@ export function AdventureBox({
       style={{
         ...frameStyle,
         padding: narrow ? '8px 12px 8px' : 'clamp(10px, 1.6vw, 14px) clamp(12px, 2vw, 18px) 12px',
-        maxHeight: narrow ? '26dvh' : '42dvh',
+        maxHeight: narrow ? '22dvh' : '34dvh',
         overflowY: 'auto',
       }}
     >
@@ -117,14 +117,15 @@ export function AdventureBox({
           fontFamily: 'var(--font-text)',
           fontSize: narrow ? '15px' : 'clamp(16px, 4.4vw, 24px)',
           lineHeight: 1.25,
-          minHeight: narrow ? '2.2em' : 'min(3.75em, 15dvh)',
+          minHeight: '1.3em',
           color: 'var(--color-text)',
         }}
       >
         {shown}
         {!done && <span style={{ opacity: 0.7 }}>▌</span>}
       </p>
-      <div style={{ marginTop: '8px', opacity: done ? 1 : 0, transition: 'opacity 0.25s' }}>
+      {done && (
+      <div style={{ marginTop: '8px', animation: 'fade-in 0.25s ease-out' }}>
         <div
           style={{
             fontFamily: 'var(--font-pixel)',
@@ -164,6 +165,7 @@ export function AdventureBox({
           </button>
         ))}
       </div>
+      )}
     </div>
   )
 }

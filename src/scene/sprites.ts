@@ -1,5 +1,11 @@
 import { CanvasTexture, NearestFilter, SRGBColorSpace } from 'three'
-import type { Character } from '../game/types'
+import type { SpriteSpec } from '../game/types'
+
+/** Alles mit id + SpriteSpec bekommt eine Figur — Spieler wie NPCs. */
+export interface SpriteFigure {
+  id: string
+  sprite: SpriteSpec
+}
 
 /**
  * Prozeduraler Pixel-Figuren-Generator: 32x48 Logikpixel je Charakter,
@@ -13,7 +19,7 @@ const canvasCache = new Map<string, HTMLCanvasElement>()
 const textureCache = new Map<string, CanvasTexture>()
 const dataUrlCache = new Map<string, string>()
 
-function drawSprite(character: Character): HTMLCanvasElement {
+function drawSprite(character: SpriteFigure): HTMLCanvasElement {
   const cached = canvasCache.get(character.id)
   if (cached) return cached
 
@@ -83,7 +89,7 @@ function drawSprite(character: Character): HTMLCanvasElement {
   return canvas
 }
 
-export function spriteTexture(character: Character): CanvasTexture {
+export function spriteTexture(character: SpriteFigure): CanvasTexture {
   const cached = textureCache.get(character.id)
   if (cached) return cached
   const texture = new CanvasTexture(drawSprite(character))
@@ -96,7 +102,7 @@ export function spriteTexture(character: Character): CanvasTexture {
 }
 
 /** Hochskalierte Vorschau (Data-URL) für den Startbildschirm. */
-export function spritePreviewUrl(character: Character, scale = 3): string {
+export function spritePreviewUrl(character: SpriteFigure, scale = 3): string {
   const key = `${character.id}@${scale}`
   const cached = dataUrlCache.get(key)
   if (cached) return cached
@@ -110,6 +116,41 @@ export function spritePreviewUrl(character: Character, scale = 3): string {
   const url = canvas.toDataURL('image/png')
   dataUrlCache.set(key, url)
   return url
+}
+
+
+const labelCache = new Map<string, { texture: CanvasTexture; aspect: number }>()
+
+/** Namensschild als Textur (statt DOM), damit es die Falltür-Animation mitmacht. */
+export function labelTexture(text: string): { texture: CanvasTexture; aspect: number } {
+  const cached = labelCache.get(text)
+  if (cached) return cached
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')!
+  const font = '24px "VT323", monospace'
+  ctx.font = font
+  const w = Math.ceil(ctx.measureText(text).width) + 20
+  const h = 34
+  canvas.width = w
+  canvas.height = h
+  ctx.fillStyle = 'rgba(23, 19, 31, 0.88)'
+  ctx.fillRect(0, 0, w, h)
+  ctx.strokeStyle = '#3a2f4d'
+  ctx.lineWidth = 2
+  ctx.strokeRect(1, 1, w - 2, h - 2)
+  ctx.font = font
+  ctx.fillStyle = '#d9a441'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(text, w / 2, h / 2 + 1)
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace
+  texture.magFilter = NearestFilter
+  texture.minFilter = NearestFilter
+  texture.generateMipmaps = false
+  const entry = { texture, aspect: w / h }
+  labelCache.set(text, entry)
+  return entry
 }
 
 /** Seitenverhältnis der Sprite-Plane (Breite/Höhe) */

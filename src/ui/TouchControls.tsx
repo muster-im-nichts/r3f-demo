@@ -1,12 +1,13 @@
 import type { CSSProperties, PointerEvent } from 'react'
 import { moveInput, type MoveDir } from '../scene/moveKeys'
+import { isNarrowScreen } from './responsive'
 
 const isTouchDevice =
   typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)
 
 const buttonStyle: CSSProperties = {
   position: 'absolute',
-  bottom: 'calc(42dvh + 18px)',
+  bottom: isNarrowScreen() ? 'calc(26dvh + 24px)' : 'calc(42dvh + 18px)',
   width: '58px',
   height: '58px',
   borderRadius: '50%',

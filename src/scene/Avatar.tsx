@@ -5,6 +5,7 @@ import { CanvasTexture, DoubleSide, MathUtils, type Group, type Mesh } from 'thr
 import { spriteTexture, SPRITE_ASPECT } from './sprites'
 import { MOVE_KEYS, moveInput } from './moveKeys'
 import { getColliders } from './propSets'
+import { avatarPos } from './avatarState'
 import type { Character } from '../game/types'
 
 const WALK_SPEED = 1.7
@@ -142,6 +143,8 @@ export function Avatar({
 
     if (vx !== 0) facing.current = vx
     if (group.current) group.current.position.set(pos.current.x, 0, pos.current.z)
+    avatarPos.x = pos.current.x
+    avatarPos.z = pos.current.z
 
     // Geh-Wippen (weich ein-/ausblendend) + Atmen
     const moving = vx !== 0 || vz !== 0

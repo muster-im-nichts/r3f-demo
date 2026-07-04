@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import type { MeshBasicMaterial, Texture } from 'three'
 import { useSceneTexture } from './textures'
 import type { EpochId } from '../game/types'
-import { PARALLAX_X } from './CameraRig'
+import { followRange, PARALLAX_X } from './cameraConfig'
 
 export const BACKDROP_Z = -7
 const FADE_Z = -6.98
@@ -26,7 +26,11 @@ function usePlaneSize(texture: Texture): [number, number] {
   const texAspect = img?.width && img?.height ? img.width / img.height : 16 / 9
   const dist = CAMERA_Z - BACKDROP_Z
   const halfH = Math.tan((FOV * Math.PI) / 360) * dist
-  const fitWidth = 2 * halfH * Math.max(viewportAspect, 0.4) + PARALLAX_X * 4 + 0.8
+  const fitWidth =
+    2 * halfH * Math.max(viewportAspect, 0.4) +
+    PARALLAX_X * 4 +
+    0.8 +
+    2 * followRange(viewportAspect) // Schwenk-Reserve der Follow-Kamera
   const width = Math.max(fitWidth, MIN_HEIGHT * texAspect)
   return [width, width / texAspect]
 }

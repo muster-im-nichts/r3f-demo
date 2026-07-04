@@ -1,13 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { StoryOption } from '../game/types'
 import { useTypewriter } from './useTypewriter'
 import { click } from '../audio/sfx'
 import { MOVE_KEYS } from '../scene/moveKeys'
+import { isNarrowScreen } from './responsive'
 
 /**
  * Die klassische Adventure-Textbox am unteren Bühnenrand: Typewriter-Text,
  * "Was machst du?" und 2–3 Optionen. Tasten 1/2/3 wählen, jede andere Taste
- * oder ein Tap auf die Box überspringt den Typewriter.
+ * oder ein Tap auf die Box überspringt den Typewriter. Über den Pfeil-Knopf
+ * (oder eingeklappt: Tap auf die Leiste) lässt sie sich wegklappen, um in
+ * die Szene einzutauchen.
  */
 export function AdventureBox({
   text,
@@ -19,6 +22,9 @@ export function AdventureBox({
   onChoose: (target: string) => void
 }) {
   const { shown, done, skip } = useTypewriter(text)
+  const [collapsed, setCollapsed] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const narrow = isNarrowScreen()
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -38,42 +44,91 @@ export function AdventureBox({
     return () => window.removeEventListener('keydown', onKey)
   }, [done, skip, options, onChoose])
 
+  // Beim Tippen und beim Einblenden der Optionen ans Ende scrollen
+  useEffect(() => {
+    const el = scrollRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [shown, done])
+
+  const frameStyle = {
+    position: 'absolute' as const,
+    left: '50%',
+    bottom: 'max(12px, env(safe-area-inset-bottom))',
+    transform: 'translateX(-50%)',
+    width: 'min(720px, calc(100% - 24px))',
+    background: 'rgba(23, 19, 31, 0.92)',
+    border: '3px solid var(--color-panel-border)',
+    borderRadius: '10px',
+    boxShadow: '0 0 0 2px #000, 0 12px 30px rgba(0,0,0,0.6)',
+    zIndex: 3,
+  }
+
+  if (collapsed) {
+    return (
+      <button
+        onClick={() => setCollapsed(false)}
+        style={{
+          ...frameStyle,
+          padding: '10px 14px',
+          color: 'var(--color-gold)',
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '10px',
+          textAlign: 'center',
+        }}
+      >
+        ▲ Geschichte einblenden
+      </button>
+    )
+  }
+
   return (
     <div
+      ref={scrollRef}
       onPointerDown={() => !done && skip()}
       style={{
-        position: 'absolute',
-        left: '50%',
-        bottom: 'max(12px, env(safe-area-inset-bottom))',
-        transform: 'translateX(-50%)',
-        width: 'min(720px, calc(100% - 24px))',
-        background: 'rgba(23, 19, 31, 0.92)',
-        border: '3px solid var(--color-panel-border)',
-        borderRadius: '10px',
-        boxShadow: '0 0 0 2px #000, 0 12px 30px rgba(0,0,0,0.6)',
-        padding: 'clamp(10px, 1.6vw, 14px) clamp(12px, 2vw, 18px) 12px',
-        maxHeight: '42dvh',
+        ...frameStyle,
+        padding: narrow ? '8px 12px 8px' : 'clamp(10px, 1.6vw, 14px) clamp(12px, 2vw, 18px) 12px',
+        maxHeight: narrow ? '26dvh' : '42dvh',
         overflowY: 'auto',
-        zIndex: 3,
       }}
     >
+      {/* Einklappen, um die Szene freizugeben */}
+      <button
+        aria-label="Textbox einklappen"
+        onClick={e => {
+          e.stopPropagation()
+          setCollapsed(true)
+        }}
+        style={{
+          position: 'sticky',
+          top: 0,
+          float: 'right',
+          background: 'transparent',
+          border: 'none',
+          color: 'var(--color-text-dim)',
+          fontSize: '14px',
+          padding: '0 2px 4px 10px',
+        }}
+      >
+        ▼
+      </button>
       <p
         style={{
           fontFamily: 'var(--font-text)',
-          fontSize: 'clamp(16px, 4.4vw, 24px)',
+          fontSize: narrow ? '15px' : 'clamp(16px, 4.4vw, 24px)',
           lineHeight: 1.25,
-          minHeight: 'min(3.75em, 15dvh)',
+          minHeight: narrow ? '2.2em' : 'min(3.75em, 15dvh)',
           color: 'var(--color-text)',
         }}
       >
         {shown}
         {!done && <span style={{ opacity: 0.7 }}>▌</span>}
       </p>
-      <div style={{ marginTop: '10px', opacity: done ? 1 : 0, transition: 'opacity 0.25s' }}>
+      <div style={{ marginTop: '8px', opacity: done ? 1 : 0, transition: 'opacity 0.25s' }}>
         <div
           style={{
             fontFamily: 'var(--font-pixel)',
-            fontSize: '11px',
+            fontSize: narrow ? '9px' : '11px',
             color: 'var(--color-gold)',
             margin: '2px 0 8px',
           }}
@@ -97,8 +152,8 @@ export function AdventureBox({
               borderRadius: '6px',
               color: 'var(--color-text)',
               fontFamily: 'var(--font-text)',
-              fontSize: 'clamp(15px, 4vw, 22px)',
-              padding: '6px 10px',
+              fontSize: narrow ? '14px' : 'clamp(15px, 4vw, 22px)',
+              padding: narrow ? '7px 8px' : '6px 10px',
               marginBottom: '2px',
             }}
             onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--color-gold-dim)')}

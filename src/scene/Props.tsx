@@ -4,9 +4,9 @@ import type { Group } from 'three'
 import { PROP_SETS, type PropDef } from './propSets'
 
 /**
- * Szenen-Requisiten im Mittelgrund. Beim Szenenwechsel fahren die alten Props
- * in die Versenkung (Bühnenfalltür), die neuen kommen gestaffelt mit kleinem
- * Überschwinger hoch.
+ * Szenen-Requisiten im Mittelgrund. Verlässt der Spieler die Bühne, versinken
+ * die Props schon während er hinausläuft (Bühnenfalltür); die neuen kommen
+ * erst, wenn die alten weg sind — gestaffelt und mit kleinem Überschwinger.
  */
 
 // --- Rein-/Raus-Animation (Bühnenfalltür) -----------------------------------
@@ -105,29 +105,52 @@ function PropGroup({
   )
 }
 
-/** Verwaltet den Requisiten-Wechsel: alte Szene versenken, neue hochfahren. */
-export function Props({ scene }: { scene: string }) {
-  const [current, setCurrent] = useState(scene)
-  const [exiting, setExiting] = useState<string | null>(null)
+/**
+ * Sequenzer: `leaving` (Spieler läuft gerade aus dem Bild) startet den
+ * Abgang sofort — kehrt er um, kommen die Props zurück. Ein Szenenwechsel
+ * wartet, bis die alte Bühne leer ist, und fährt erst dann die neue hoch.
+ */
+export function Props({ scene, leaving }: { scene: string; leaving: boolean }) {
+  const [shown, setShown] = useState(scene)
+  const [mode, setMode] = useState<'enter' | 'exit'>('enter')
+  const exited = useRef(false)
 
   useEffect(() => {
-    if (scene === current || scene === exiting) return
-    setExiting(current)
-    setCurrent(scene)
-  }, [scene, current, exiting])
+    if (scene === shown) {
+      // gleiche Szene: Abgang beim Rauslaufen, Rückkehr beim Umkehren
+      setMode(current => {
+        const next = leaving ? 'exit' : 'enter'
+        if (next !== current) exited.current = false
+        return next
+      })
+      return
+    }
+    // Szenenwechsel: erst die alte Bühne leeren
+    if (exited.current) {
+      exited.current = false
+      setShown(scene)
+      setMode('enter')
+    } else {
+      setMode('exit')
+    }
+  }, [scene, shown, leaving])
+
+  const handleExited = () => {
+    exited.current = true
+    if (scene !== shown) {
+      exited.current = false
+      setShown(scene)
+      setMode('enter')
+    }
+  }
 
   return (
-    <>
-      {exiting && (
-        <PropGroup
-          key={`exit-${exiting}`}
-          scene={exiting}
-          mode="exit"
-          delay={0}
-          onExited={() => setExiting(null)}
-        />
-      )}
-      <PropGroup key={current} scene={current} mode="enter" delay={exiting ? 0.5 : 0.2} />
-    </>
+    <PropGroup
+      key={`${shown}-${mode}`}
+      scene={shown}
+      mode={mode}
+      delay={mode === 'enter' ? 0.15 : 0}
+      onExited={mode === 'exit' ? handleExited : undefined}
+    />
   )
 }

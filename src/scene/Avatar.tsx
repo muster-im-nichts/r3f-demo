@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import { CanvasTexture, DoubleSide, MathUtils, type Group, type Mesh } from 'three'
@@ -50,11 +50,14 @@ export function Avatar({
   speech,
   scene,
   onExitStage,
+  onLeavingStage,
 }: {
   character: Character
   speech?: string
   scene: string
   onExitStage?: (direction: 'left' | 'right') => void
+  /** Feuert, sobald die Figur den sichtbaren Bühnenrand verlässt/zurückkehrt */
+  onLeavingStage?: (leaving: boolean) => void
 }) {
   const mesh = useRef<Mesh>(null)
   const texture = spriteTexture(character)
@@ -74,8 +77,23 @@ export function Avatar({
   const walkPhase = useRef(0)
   const walkAmp = useRef(0)
   const pendingExit = useRef<'left' | 'right' | null>(null)
+  const wasLeaving = useRef(false)
   const xLimit = Math.min(3.2, Math.max(0.9, viewportWidth / 2 - 0.55))
   const colliders = useMemo(() => getColliders(scene), [scene])
+
+  // Sprechblase nach einer Weile ausblenden (länge-abhängig), dann abbauen
+  const [bubble, setBubble] = useState<'show' | 'fade' | 'off'>('show')
+  useEffect(() => {
+    if (!speech) return
+    setBubble('show')
+    const holdMs = 3000 + speech.length * 55
+    const fade = setTimeout(() => setBubble('fade'), holdMs)
+    const off = setTimeout(() => setBubble('off'), holdMs + 500)
+    return () => {
+      clearTimeout(fade)
+      clearTimeout(off)
+    }
+  }, [speech])
 
   // Tastatur → gemeinsamer Bewegungs-Zustand (Touch-Buttons schreiben ihn auch)
   useEffect(() => {
@@ -135,6 +153,13 @@ export function Avatar({
       }
     }
 
+    // Am Bühnenrand: Requisiten schon mal versenken (bzw. zurückholen)
+    const leaving = Math.abs(pos.current.x) > xLimit - 0.05
+    if (leaving !== wasLeaving.current) {
+      wasLeaving.current = leaving
+      onLeavingStage?.(leaving)
+    }
+
     // Aus dem Bild gelaufen → Nachbarszene anfordern
     if (!pendingExit.current && Math.abs(pos.current.x) > xLimit + EXIT_OVERSHOOT && onExitStage) {
       pendingExit.current = pos.current.x > 0 ? 'right' : 'left'
@@ -188,13 +213,13 @@ export function Avatar({
         <planeGeometry args={[1.0, 0.5]} />
         <meshBasicMaterial map={getShadowTexture()} transparent depthWrite={false} />
       </mesh>
-      {speech && (
+      {speech && bubble !== 'off' && (
         <Html
           transform
           position={[narrow ? 0 : 0.35, bubbleY, 0.05]}
           distanceFactor={DISTANCE_FACTOR}
           pointerEvents="none"
-          style={{ opacity: 0.95 }}
+          style={{ opacity: bubble === 'fade' ? 0 : 0.95, transition: 'opacity 0.45s' }}
         >
           <div
             style={{

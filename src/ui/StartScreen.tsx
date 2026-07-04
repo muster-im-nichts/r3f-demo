@@ -16,8 +16,9 @@ const optionStyle = (active: boolean): CSSProperties => ({
   borderRadius: '8px',
   color: active ? 'var(--color-gold)' : 'var(--color-text)',
   fontFamily: 'var(--font-text)',
-  fontSize: '20px',
+  fontSize: 'clamp(16px, 4.6vw, 20px)',
   lineHeight: 1.1,
+  overflowWrap: 'anywhere',
 })
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -72,17 +73,17 @@ export function StartScreen({ onStart }: { onStart: (setup: GameSetup) => void }
           <br />
           Zeitreise
         </h1>
-        <p style={{ fontSize: '21px', color: 'var(--color-text-dim)', marginBottom: '24px' }}>
+        <p style={{ fontSize: 'clamp(17px, 4.6vw, 21px)', color: 'var(--color-text-dim)', marginBottom: '24px' }}>
           Wähle Zeit, Person und Geschichte — und entscheide selbst, wie sie ausgeht.
         </p>
 
         <Section title="ZEIT">
           {EPOCHS.map(e => (
             <button key={e.id} style={optionStyle(epoch === e.id)} onClick={() => setEpoch(e.id)}>
-              <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '13px', marginBottom: '4px' }}>
+              <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 'clamp(10px, 2.9vw, 13px)', marginBottom: '4px' }}>
                 {e.label}
               </div>
-              <div style={{ fontSize: '15px', opacity: 0.75 }}>{e.tagline}</div>
+              <div style={{ fontSize: 'clamp(13px, 3.4vw, 15px)', opacity: 0.75 }}>{e.tagline}</div>
             </button>
           ))}
         </Section>
@@ -99,10 +100,10 @@ export function StartScreen({ onStart }: { onStart: (setup: GameSetup) => void }
                 alt={c.name}
                 style={{ height: '64px', imageRendering: 'pixelated', display: 'block', margin: '0 auto 6px' }}
               />
-              <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '11px', marginBottom: '4px' }}>
+              <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 'clamp(9px, 2.5vw, 11px)', marginBottom: '4px' }}>
                 {c.name}
               </div>
-              <div style={{ fontSize: '15px', opacity: 0.75 }}>{c.description}</div>
+              <div style={{ fontSize: 'clamp(13px, 3.4vw, 15px)', opacity: 0.75 }}>{c.description}</div>
             </button>
           ))}
         </Section>
@@ -110,10 +111,10 @@ export function StartScreen({ onStart }: { onStart: (setup: GameSetup) => void }
         <Section title="GESCHICHTE">
           {GENRES.map(g => (
             <button key={g.id} style={optionStyle(genre === g.id)} onClick={() => setGenre(g.id)}>
-              <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '12px', marginBottom: '4px' }}>
+              <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 'clamp(8px, 2.3vw, 12px)', marginBottom: '4px', overflowWrap: 'anywhere' }}>
                 {g.label}
               </div>
-              <div style={{ fontSize: '15px', opacity: 0.75 }}>{g.description}</div>
+              <div style={{ fontSize: 'clamp(13px, 3.4vw, 15px)', opacity: 0.75 }}>{g.description}</div>
             </button>
           ))}
         </Section>

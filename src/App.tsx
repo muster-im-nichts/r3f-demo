@@ -23,6 +23,8 @@ export default function App() {
   const [phase, setPhase] = useState<Phase>({ kind: 'start' })
   // Szene, in die der Spieler zu Fuß gewandert ist (null = Szene des Knotens)
   const [walkScene, setWalkScene] = useState<string | null>(null)
+  // Spieler ist gerade dabei, die Bühne zu verlassen (Props versinken schon)
+  const [leaving, setLeaving] = useState(false)
 
   const nodeId = phase.kind === 'start' ? null : phase.nodeId
   useEffect(() => {
@@ -79,6 +81,8 @@ export default function App() {
         }
         curtainClosed={phase.kind === 'end'}
         onExitStage={exitStage}
+        leaving={leaving}
+        onLeavingStage={setLeaving}
       />
       <Letterbox />
 

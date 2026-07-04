@@ -41,6 +41,8 @@ export function Stage({
   speech,
   curtainClosed,
   onExitStage,
+  leaving,
+  onLeavingStage,
 }: {
   epoch: EpochId
   scene: string
@@ -48,6 +50,8 @@ export function Stage({
   speech?: string
   curtainClosed: boolean
   onExitStage?: (direction: 'left' | 'right') => void
+  leaving: boolean
+  onLeavingStage?: (leaving: boolean) => void
 }) {
   const lightColor = getEpoch(epoch).mood.light
   return (
@@ -59,8 +63,14 @@ export function Stage({
       <Suspense fallback={null}>
         <CameraRig />
         <Backdrop epoch={epoch} scene={scene} />
-        <Props scene={scene} />
-        <Avatar character={character} speech={speech} scene={scene} onExitStage={onExitStage} />
+        <Props scene={scene} leaving={leaving} />
+        <Avatar
+          character={character}
+          speech={speech}
+          scene={scene}
+          onExitStage={onExitStage}
+          onLeavingStage={onLeavingStage}
+        />
         <Atmosphere color={lightColor} />
         <Curtain closed={curtainClosed} />
 

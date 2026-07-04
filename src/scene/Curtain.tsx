@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { CanvasTexture, MathUtils, NearestFilter, SRGBColorSpace, type Mesh } from 'three'
+import { followRange } from './cameraConfig'
 
 /**
  * Roter Theatervorhang: zwei Falten-Panels nah an der Kamera. Beim Spielstart
@@ -50,10 +51,11 @@ function Panel({ side, closed }: { side: -1 | 1; closed: boolean }) {
   const viewportAspect = useThree(s => s.viewport.aspect)
   const texture = useMemo(getCurtainTexture, [])
 
-  // Sichtbare halbe Breite auf Vorhang-Tiefe (+ Parallax-/Rand-Reserve)
+  // Sichtbare halbe Breite auf Vorhang-Tiefe + Parallax- UND Follow-Reserve,
+  // damit der geparkte Vorhang beim Kameraschwenk nie ins Bild lugt
   const halfVisible =
     Math.tan((FOV * Math.PI) / 360) * (CAMERA_Z - CURTAIN_Z) * Math.max(viewportAspect, 0.4)
-  const xOpen = side * (halfVisible + PANEL_W / 2 + 0.9)
+  const xOpen = side * (halfVisible + PANEL_W / 2 + 0.9 + followRange(viewportAspect))
   const xClosed = side * (PANEL_W / 2 - 0.15)
 
   useFrame((state, delta) => {

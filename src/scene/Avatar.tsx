@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
-import { CanvasTexture, DoubleSide, MathUtils, type Group, type Mesh } from 'three'
+import { CanvasTexture, DoubleSide, MathUtils, Vector3, type Group, type Mesh } from 'three'
 import { spriteTexture, SPRITE_ASPECT } from './sprites'
 import { MOVE_KEYS, moveInput } from './moveKeys'
 import { getArrivalX, getColliders, stageSqueeze } from './propSets'
 import { avatarPos, cameraCut } from './avatarState'
+import { followRange } from './cameraConfig'
 import type { Character } from '../game/types'
 
 const WALK_SPEED = 1.7
@@ -15,8 +16,18 @@ const Z_MAX = 0.9 // vorn an der Rampe
 /** Start auf der freien Front-Spur: Seitwärtslaufen bleibt kollisionsfrei */
 const START_Z = 0.8
 const AVATAR_RADIUS = 0.24
-/** Wie weit man hinter dem Bühnenrand weiterläuft, bevor die Szene wechselt */
-const EXIT_OVERSHOOT = 1.0
+const CAMERA_Z = 6
+const FOV = 45
+/**
+ * Randlogik in Bildschirm-Koordinaten (NDC-x der Kamera-Projektion), damit
+ * Abgang/Auftritt am tatsächlichen Bildrand hängen — die Follow-Kamera hält
+ * die Figur sonst längst noch im Bild, wenn feste Welt-Schwellen greifen.
+ */
+const NDC_LEAVING = 0.9 // Props versinken: Figur fast am Bildrand, auswärts
+const NDC_RETURN = 0.72 // Props kommen zurück: wieder klar im Bild
+const NDC_EXIT = 1.15 // Szenenwechsel: Figur ist sichtbar aus dem Bild
+
+const projected = new Vector3()
 
 let shadowTexture: CanvasTexture | null = null
 
@@ -71,6 +82,7 @@ export function Avatar({
   // Auf schmalen Screens (Hochformat) rückt der Avatar Richtung Mitte,
   // sonst steht er außerhalb des Sichtfelds
   const viewportWidth = useThree(s => s.viewport.width)
+  const viewportAspect = useThree(s => s.viewport.aspect)
   const x = MathUtils.clamp(-viewportWidth * 0.22, -1.1, -0.45)
   // Hochformat: Blase höher und kompakter, damit sie nicht in die Textbox ragt
   const narrow = viewportWidth < 3
@@ -89,7 +101,6 @@ export function Avatar({
   // rein bis zur Ankunftsposition ('in')
   const transitStage = useRef<'out' | 'in'>('out')
   const arrivedNotified = useRef(false)
-  const xLimit = Math.min(3.2, Math.max(0.9, viewportWidth / 2 - 0.55))
   const squeeze = stageSqueeze(viewportWidth)
   const colliders = useMemo(() => getColliders(scene, squeeze), [scene, squeeze])
 
@@ -141,7 +152,11 @@ export function Avatar({
   // Die neue Bühne gilt sofort als betreten — Props fahren direkt hoch.
   useEffect(() => {
     if (!pendingExit.current) return
-    pos.current.x = pendingExit.current === 'right' ? -(xLimit + 0.85) : xLimit + 0.85
+    // knapp außerhalb des Bildrands der frisch geschnittenen Kamera auftreten
+    const halfView =
+      Math.tan((FOV * Math.PI) / 360) * (CAMERA_Z - pos.current.z) * viewportAspect
+    const offstage = followRange(viewportAspect) + halfView + 0.4
+    pos.current.x = pendingExit.current === 'right' ? -offstage : offstage
     avatarPos.x = pos.current.x
     cameraCut.pending = true // harter Schnitt statt Gegenschwenk
     pendingExit.current = null
@@ -166,11 +181,10 @@ export function Avatar({
     // Stage-Squeeze), sonst rennt man aus Versehen durch die Szenen
     const speedX = WALK_SPEED * squeeze
     const speedZ = DEPTH_SPEED * (0.7 + 0.3 * squeeze)
-    pos.current.x = MathUtils.clamp(
-      pos.current.x + vx * speedX * delta,
-      -(xLimit + EXIT_OVERSHOOT + 0.4),
-      xLimit + EXIT_OVERSHOOT + 0.4,
-    )
+    const halfView =
+      Math.tan((FOV * Math.PI) / 360) * (CAMERA_Z - pos.current.z) * viewportAspect
+    const offstageLimit = followRange(viewportAspect) + halfView + 0.8
+    pos.current.x = MathUtils.clamp(pos.current.x + vx * speedX * delta, -offstageLimit, offstageLimit)
     pos.current.z = MathUtils.clamp(pos.current.z + vz * speedZ * delta, Z_MIN, Z_MAX)
 
     // Kollision: herausschieben und aktiv außen herum steuern — blockiert
@@ -214,22 +228,28 @@ export function Avatar({
       }
     }
 
-    // Requisiten-Abgang nur bei klarer Auswärtsbewegung über die Kante,
+    // Wo steht die Figur im Bild? (NDC-x: -1 = linker Rand, +1 = rechter)
+    projected.set(pos.current.x, 1.0, pos.current.z).project(state.camera)
+    const ndcX = projected.x
+    const absNdc = Math.abs(ndcX)
+
+    // Requisiten-Abgang nur bei klarer Auswärtsbewegung an den Bildrand,
     // Rückkehr bei Einwärtsbewegung oder deutlich im Bild — mit Hysterese
     // dazwischen (Stillstand hält den Zustand), damit nichts flackert
-    const absX = Math.abs(pos.current.x)
-    const movingOutward = vx !== 0 && Math.sign(vx) === Math.sign(pos.current.x || 1)
+    const movingOutward = vx !== 0 && Math.sign(vx) === Math.sign(ndcX || 1)
     let leaving = wasLeaving.current
-    if (movingOutward && absX > xLimit + 0.1) leaving = true
-    else if ((vx !== 0 && !movingOutward) || absX < xLimit - 0.15) leaving = false
+    if (movingOutward && absNdc > NDC_LEAVING) leaving = true
+    else if ((vx !== 0 && !movingOutward) || absNdc < NDC_RETURN) leaving = false
     if (leaving !== wasLeaving.current) {
       wasLeaving.current = leaving
       onLeavingStage?.(leaving)
     }
 
-    // Aus dem Bild gelaufen → Nachbarszene anfordern
-    if (!pendingExit.current && Math.abs(pos.current.x) > xLimit + EXIT_OVERSHOOT && onExitStage) {
-      pendingExit.current = pos.current.x > 0 ? 'right' : 'left'
+    // Sichtbar aus dem Bild gelaufen (auswärts!) → Nachbarszene anfordern.
+    // movingOutward schützt den Wiedereintritt knapp außerhalb des Bilds
+    // davor, den Trigger sofort erneut auszulösen.
+    if (!pendingExit.current && movingOutward && absNdc > NDC_EXIT && onExitStage) {
+      pendingExit.current = ndcX > 0 ? 'right' : 'left'
       onExitStage(pendingExit.current)
     }
 

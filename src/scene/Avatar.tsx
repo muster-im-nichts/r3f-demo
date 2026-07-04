@@ -140,7 +140,9 @@ export function Avatar({
     )
     pos.current.z = MathUtils.clamp(pos.current.z + vz * DEPTH_SPEED * delta, Z_MIN, Z_MAX)
 
-    // Kollision: aus Requisiten-Kreisen herausschieben
+    // Kollision: herausschieben und aktiv außen herum steuern — blockiert
+    // ein Hindernis den Weg, weicht die Figur von selbst nach oben/unten aus
+    const moving = vx !== 0 || vz !== 0
     for (const c of colliders) {
       const dx = pos.current.x - c.x
       const dz = pos.current.z - c.z
@@ -148,8 +150,21 @@ export function Avatar({
       const d2 = dx * dx + dz * dz
       if (d2 < rr * rr && d2 > 1e-6) {
         const d = Math.sqrt(d2)
-        pos.current.x = c.x + (dx / d) * rr
-        pos.current.z = MathUtils.clamp(c.z + (dz / d) * rr, Z_MIN, Z_MAX)
+        const nx = dx / d
+        const nz = dz / d
+        pos.current.x = c.x + nx * rr
+        pos.current.z = MathUtils.clamp(c.z + nz * rr, Z_MIN, Z_MAX)
+        if (moving) {
+          // Tangente wählen, die der gewünschten Richtung am nächsten liegt
+          let tx = -nz
+          let tz = nx
+          if (tx * vx + tz * vz < 0) {
+            tx = -tx
+            tz = -tz
+          }
+          pos.current.x += tx * WALK_SPEED * delta
+          pos.current.z = MathUtils.clamp(pos.current.z + tz * DEPTH_SPEED * delta, Z_MIN, Z_MAX)
+        }
       }
     }
 
@@ -172,7 +187,6 @@ export function Avatar({
     avatarPos.z = pos.current.z
 
     // Geh-Wippen (weich ein-/ausblendend) + Atmen
-    const moving = vx !== 0 || vz !== 0
     walkAmp.current = MathUtils.damp(walkAmp.current, moving ? 1 : 0, 8, delta)
     walkPhase.current += delta * 11 * walkAmp.current
     const bob = Math.abs(Math.sin(walkPhase.current)) * 0.06 * walkAmp.current

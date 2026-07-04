@@ -108,42 +108,52 @@ function PropGroup({
 /**
  * Sequenzer: `leaving` (Spieler läuft gerade aus dem Bild) startet den
  * Abgang sofort — kehrt er um, kommen die Props zurück. Ein Szenenwechsel
- * wartet, bis die alte Bühne leer ist, und fährt erst dann die neue hoch.
+ * wartet, bis die alte Bühne leer ist. Solange der Spieler noch im
+ * Randbereich steht, bleibt die neue Bühne `hidden` (nichts poppt rein);
+ * erst wenn er ins Bild läuft, fahren die neuen Props hoch.
  */
+type StageMode = 'enter' | 'exit' | 'hidden'
+
 export function Props({ scene, leaving }: { scene: string; leaving: boolean }) {
   const [shown, setShown] = useState(scene)
-  const [mode, setMode] = useState<'enter' | 'exit'>('enter')
+  const [mode, setMode] = useState<StageMode>('enter')
   const exited = useRef(false)
 
   useEffect(() => {
     if (scene === shown) {
       // gleiche Szene: Abgang beim Rauslaufen, Rückkehr beim Umkehren
-      setMode(current => {
-        const next = leaving ? 'exit' : 'enter'
-        if (next !== current) exited.current = false
-        return next
-      })
+      if (leaving && mode === 'enter') {
+        exited.current = false
+        setMode('exit')
+      } else if (!leaving && mode !== 'enter') {
+        exited.current = false
+        setMode('enter')
+      }
       return
     }
-    // Szenenwechsel: erst die alte Bühne leeren
-    if (exited.current) {
+    // Szenenwechsel: erst die alte Bühne leeren; ist sie schon leer,
+    // direkt umschalten
+    if (exited.current || mode === 'hidden') {
       exited.current = false
       setShown(scene)
-      setMode('enter')
-    } else {
+      setMode(leaving ? 'hidden' : 'enter')
+    } else if (mode !== 'exit') {
       setMode('exit')
     }
-  }, [scene, shown, leaving])
+  }, [scene, shown, leaving, mode])
 
   const handleExited = () => {
     exited.current = true
     if (scene !== shown) {
       exited.current = false
       setShown(scene)
-      setMode('enter')
+      setMode(leaving ? 'hidden' : 'enter')
+    } else if (leaving) {
+      setMode('hidden')
     }
   }
 
+  if (mode === 'hidden') return null
   return (
     <PropGroup
       key={`${shown}-${mode}`}

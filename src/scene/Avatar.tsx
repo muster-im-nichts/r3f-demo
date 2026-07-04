@@ -160,12 +160,16 @@ export function Avatar({
       vx = autoWalk === 'right' ? 1 : -1
       vz = 0
     }
+    // Auf schmalen Bühnen langsamer laufen (gleicher Faktor wie der
+    // Stage-Squeeze), sonst rennt man aus Versehen durch die Szenen
+    const speedX = WALK_SPEED * squeeze
+    const speedZ = DEPTH_SPEED * (0.7 + 0.3 * squeeze)
     pos.current.x = MathUtils.clamp(
-      pos.current.x + vx * WALK_SPEED * delta,
+      pos.current.x + vx * speedX * delta,
       -(xLimit + EXIT_OVERSHOOT + 0.4),
       xLimit + EXIT_OVERSHOOT + 0.4,
     )
-    pos.current.z = MathUtils.clamp(pos.current.z + vz * DEPTH_SPEED * delta, Z_MIN, Z_MAX)
+    pos.current.z = MathUtils.clamp(pos.current.z + vz * speedZ * delta, Z_MIN, Z_MAX)
 
     // Kollision: herausschieben und aktiv außen herum steuern — blockiert
     // ein Hindernis den Weg, weicht die Figur von selbst nach oben/unten aus
@@ -189,8 +193,8 @@ export function Avatar({
             tx = -tx
             tz = -tz
           }
-          pos.current.x += tx * WALK_SPEED * delta
-          pos.current.z = MathUtils.clamp(pos.current.z + tz * DEPTH_SPEED * delta, Z_MIN, Z_MAX)
+          pos.current.x += tx * speedX * delta
+          pos.current.z = MathUtils.clamp(pos.current.z + tz * speedZ * delta, Z_MIN, Z_MAX)
         }
       }
     }

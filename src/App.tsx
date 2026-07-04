@@ -154,9 +154,11 @@ export default function App() {
               if (exit) choose(exit.target)
             }}
           />
-          <TouchControls />
         </>
       )}
+      {/* Joystick bleibt auch im Transit gemountet, sonst verschluckt ein
+          laufender Drag sein pointerup und die Richtung klemmt */}
+      {phase.kind === 'playing' && <TouchControls />}
 
       {phase.kind === 'end' && (
         <EndScreen

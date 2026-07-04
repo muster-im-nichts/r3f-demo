@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent } from 'react'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { moveInput, type MoveDir } from '../scene/moveKeys'
 import { isNarrowScreen } from './responsive'
 
@@ -34,6 +34,9 @@ export function TouchControls() {
   const [active, setActive] = useState(false)
   const [knob, setKnob] = useState({ x: 0, y: 0 })
   const origin = useRef({ x: 0, y: 0 })
+
+  // Beim Unmount (z.B. Spielende) darf keine Richtung hängen bleiben
+  useEffect(() => clearAll, [])
 
   if (!isTouchDevice) return null
 

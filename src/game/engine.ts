@@ -1,4 +1,4 @@
-import type { Campaign, GameSetup, NodeId, StoryNode, TextVariant } from './types'
+import type { Campaign, GameSetup, NodeId, StoryNode, StoryOption, TextVariant } from './types'
 
 export function getNode(campaign: Campaign, id: NodeId): StoryNode {
   const node = campaign.nodes[id]
@@ -70,4 +70,20 @@ export function validateCampaign(campaign: Campaign): void {
 /** Alle Szenen-Keys einer Kampagne (für das Vorladen der Hintergründe). */
 export function collectScenes(campaign: Campaign): string[] {
   return [...new Set(Object.values(campaign.nodes).map(n => n.scene))]
+}
+
+/**
+ * Bühnen-Ausgänge eines Knotens: Optionen, deren Ziel in einer anderen Szene
+ * liegt, lassen sich auch "mit den Füßen" wählen — die erste führt nach
+ * rechts, die zweite nach links. Rein abgeleitet, kein eigenes Datenfeld.
+ */
+export function deriveExits(
+  campaign: Campaign,
+  node: StoryNode,
+): { right?: StoryOption; left?: StoryOption } {
+  const moves = (node.options ?? []).filter(option => {
+    const target = campaign.nodes[option.target]
+    return target && target.scene !== node.scene
+  })
+  return { right: moves[0], left: moves[1] }
 }

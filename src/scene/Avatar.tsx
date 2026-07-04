@@ -4,7 +4,7 @@ import { Html } from '@react-three/drei'
 import { CanvasTexture, DoubleSide, MathUtils, type Group, type Mesh } from 'three'
 import { spriteTexture, SPRITE_ASPECT } from './sprites'
 import { MOVE_KEYS, moveInput } from './moveKeys'
-import { getColliders, stageSqueeze } from './propSets'
+import { getArrivalX, getColliders, stageSqueeze } from './propSets'
 import { avatarPos, cameraCut } from './avatarState'
 import type { Character } from '../game/types'
 
@@ -51,6 +51,8 @@ export function Avatar({
   scene,
   onExitStage,
   onLeavingStage,
+  autoWalk,
+  onArrived,
 }: {
   character: Character
   speech?: string
@@ -58,6 +60,9 @@ export function Avatar({
   onExitStage?: (direction: 'left' | 'right') => void
   /** Feuert, sobald die Figur den sichtbaren Bühnenrand verlässt/zurückkehrt */
   onLeavingStage?: (leaving: boolean) => void
+  /** Story-Transit: Figur läuft automatisch in diese Richtung zur Zielszene */
+  autoWalk?: 'left' | 'right' | null
+  onArrived?: () => void
 }) {
   const mesh = useRef<Mesh>(null)
   const texture = spriteTexture(character)
@@ -78,6 +83,10 @@ export function Avatar({
   const walkAmp = useRef(0)
   const pendingExit = useRef<'left' | 'right' | null>(null)
   const wasLeaving = useRef(false)
+  // Auto-Walk: erst raus aus der alten Szene ('out'), nach dem Versetzen
+  // rein bis zur Ankunftsposition ('in')
+  const transitStage = useRef<'out' | 'in'>('out')
+  const arrivedNotified = useRef(false)
   const xLimit = Math.min(3.2, Math.max(0.9, viewportWidth / 2 - 0.55))
   const squeeze = stageSqueeze(viewportWidth)
   const colliders = useMemo(() => getColliders(scene, squeeze), [scene, squeeze])
@@ -95,6 +104,13 @@ export function Avatar({
       clearTimeout(off)
     }
   }, [speech])
+
+  useEffect(() => {
+    if (autoWalk) {
+      transitStage.current = 'out'
+      arrivedNotified.current = false
+    }
+  }, [autoWalk])
 
   // Tastatur → gemeinsamer Bewegungs-Zustand (Touch-Buttons schreiben ihn auch)
   useEffect(() => {
@@ -129,6 +145,7 @@ export function Avatar({
     pendingExit.current = null
     wasLeaving.current = false
     onLeavingStage?.(false)
+    if (autoWalk) transitStage.current = 'in'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene])
 
@@ -136,9 +153,13 @@ export function Avatar({
     if (!mesh.current) return
     const t = state.clock.elapsedTime
 
-    // Bewegung integrieren
-    const vx = (moveInput.has('right') ? 1 : 0) - (moveInput.has('left') ? 1 : 0)
-    const vz = (moveInput.has('front') ? 1 : 0) - (moveInput.has('back') ? 1 : 0)
+    // Bewegung integrieren; im Story-Transit läuft die Figur von selbst
+    let vx = (moveInput.has('right') ? 1 : 0) - (moveInput.has('left') ? 1 : 0)
+    let vz = (moveInput.has('front') ? 1 : 0) - (moveInput.has('back') ? 1 : 0)
+    if (autoWalk) {
+      vx = autoWalk === 'right' ? 1 : -1
+      vz = 0
+    }
     pos.current.x = MathUtils.clamp(
       pos.current.x + vx * WALK_SPEED * delta,
       -(xLimit + EXIT_OVERSHOOT + 0.4),
@@ -171,6 +192,19 @@ export function Avatar({
           pos.current.x += tx * WALK_SPEED * delta
           pos.current.z = MathUtils.clamp(pos.current.z + tz * DEPTH_SPEED * delta, Z_MIN, Z_MAX)
         }
+      }
+    }
+
+    // Ankunft in der Zielszene: neben dem NPC stehen bleiben
+    if (autoWalk && transitStage.current === 'in' && !arrivedNotified.current) {
+      const arrival = getArrivalX(scene, squeeze, autoWalk)
+      if (
+        (autoWalk === 'right' && pos.current.x >= arrival) ||
+        (autoWalk === 'left' && pos.current.x <= arrival)
+      ) {
+        pos.current.x = arrival
+        arrivedNotified.current = true
+        onArrived?.()
       }
     }
 

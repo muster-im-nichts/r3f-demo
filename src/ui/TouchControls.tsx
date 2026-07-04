@@ -1,74 +1,107 @@
-import type { CSSProperties, PointerEvent } from 'react'
+import { useRef, useState, type PointerEvent } from 'react'
 import { moveInput, type MoveDir } from '../scene/moveKeys'
 import { isNarrowScreen } from './responsive'
 
 const isTouchDevice =
   typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)
 
-const buttonStyle: CSSProperties = {
-  width: '46px',
-  height: '46px',
-  borderRadius: '10px',
-  background: 'rgba(23, 19, 31, 0.65)',
-  border: '2px solid var(--color-gold-dim)',
-  color: 'var(--color-gold)',
-  fontSize: '18px',
-  lineHeight: 1,
-  touchAction: 'none',
-  userSelect: 'none',
-  WebkitUserSelect: 'none',
+const BASE = 112
+const KNOB = 48
+const MAX_OFFSET = (BASE - KNOB) / 2
+const DEADZONE = 12
+
+function applyVector(dx: number, dy: number): void {
+  const set = (dir: MoveDir, active: boolean) =>
+    active ? moveInput.add(dir) : moveInput.delete(dir)
+  set('left', dx < -DEADZONE)
+  set('right', dx > DEADZONE)
+  set('back', dy < -DEADZONE)
+  set('front', dy > DEADZONE)
 }
 
-const LABELS: Record<MoveDir, string> = { back: '▲', front: '▼', left: '◀', right: '▶' }
-const ARIA: Record<MoveDir, string> = {
-  back: 'Nach hinten laufen',
-  front: 'Nach vorn laufen',
-  left: 'Nach links laufen',
-  right: 'Nach rechts laufen',
+function clearAll(): void {
+  moveInput.delete('left')
+  moveInput.delete('right')
+  moveInput.delete('back')
+  moveInput.delete('front')
 }
 
-function HoldButton({ dir, cell }: { dir: MoveDir; cell: CSSProperties }) {
-  const press = (e: PointerEvent<HTMLButtonElement>) => {
-    e.currentTarget.setPointerCapture(e.pointerId)
-    moveInput.add(dir)
-  }
-  const release = () => moveInput.delete(dir)
-  return (
-    <button
-      aria-label={ARIA[dir]}
-      style={{ ...buttonStyle, ...cell }}
-      onPointerDown={press}
-      onPointerUp={release}
-      onPointerCancel={release}
-      onLostPointerCapture={release}
-      onContextMenu={e => e.preventDefault()}
-    >
-      {LABELS[dir]}
-    </button>
-  )
-}
-
-/** On-Screen-D-Pad (alle vier Richtungen) — nur auf Touch-Geräten sichtbar. */
+/**
+ * Virtueller Joystick (rechts, verblasst bei Nichtbenutzung) —
+ * nur auf Touch-Geräten sichtbar.
+ */
 export function TouchControls() {
+  const [active, setActive] = useState(false)
+  const [knob, setKnob] = useState({ x: 0, y: 0 })
+  const origin = useRef({ x: 0, y: 0 })
+
   if (!isTouchDevice) return null
+
+  const down = (e: PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    const rect = e.currentTarget.getBoundingClientRect()
+    origin.current = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+    setActive(true)
+    move(e)
+  }
+  const move = (e: PointerEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return
+    let dx = e.clientX - origin.current.x
+    let dy = e.clientY - origin.current.y
+    const len = Math.hypot(dx, dy)
+    if (len > MAX_OFFSET) {
+      dx = (dx / len) * MAX_OFFSET
+      dy = (dy / len) * MAX_OFFSET
+    }
+    setKnob({ x: dx, y: dy })
+    applyVector(dx, dy)
+  }
+  const up = () => {
+    setActive(false)
+    setKnob({ x: 0, y: 0 })
+    clearAll()
+  }
+
   return (
     <div
+      onPointerDown={down}
+      onPointerMove={move}
+      onPointerUp={up}
+      onPointerCancel={up}
+      onLostPointerCapture={up}
+      onContextMenu={e => e.preventDefault()}
       style={{
         position: 'absolute',
-        left: '12px',
-        bottom: isNarrowScreen() ? 'calc(26dvh + 20px)' : 'calc(42dvh + 20px)',
+        right: '16px',
+        bottom: isNarrowScreen() ? 'calc(26dvh + 24px)' : 'calc(42dvh + 24px)',
+        width: `${BASE}px`,
+        height: `${BASE}px`,
+        borderRadius: '50%',
+        background: 'rgba(23, 19, 31, 0.5)',
+        border: '2px solid var(--color-gold-dim)',
+        opacity: active ? 0.95 : 0.35,
+        transition: 'opacity 0.35s',
         zIndex: 3,
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 46px)',
-        gridTemplateRows: 'repeat(3, 46px)',
-        gap: '4px',
         touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
       }}
     >
-      <HoldButton dir="back" cell={{ gridColumn: 2, gridRow: 1 }} />
-      <HoldButton dir="left" cell={{ gridColumn: 1, gridRow: 2 }} />
-      <HoldButton dir="right" cell={{ gridColumn: 3, gridRow: 2 }} />
-      <HoldButton dir="front" cell={{ gridColumn: 2, gridRow: 3 }} />
+      <div
+        style={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          width: `${KNOB}px`,
+          height: `${KNOB}px`,
+          borderRadius: '50%',
+          background: 'rgba(217, 164, 65, 0.85)',
+          border: '2px solid #000',
+          transform: `translate(calc(-50% + ${knob.x}px), calc(-50% + ${knob.y}px))`,
+          transition: active ? 'none' : 'transform 0.2s',
+          pointerEvents: 'none',
+        }}
+      />
     </div>
   )
 }

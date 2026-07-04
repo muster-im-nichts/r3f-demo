@@ -22,6 +22,8 @@ export type PropDef = {
   scale?: number
   /** Kollisionsradius in x/z; fehlt er, kann man durchlaufen */
   r?: number
+  /** Markiert den Gesprächspartner der Szene (Anker für Auto-Walk-Ankunft) */
+  npc?: boolean
 }
 
 export const PROP_SETS: Record<string, PropDef[]> = {
@@ -31,26 +33,26 @@ export const PROP_SETS: Record<string, PropDef[]> = {
     // Kiste hinten lassen: vorn an der Rampe muss eine Lauf-Gasse frei bleiben
     { node: <Crate />, position: [2.9, 0, -0.55], rotationY: 0.4, r: 0.42 },
     { node: <Lantern />, position: [-2.8, 0, -1.0], r: 0.22 },
-    { node: <NpcFigure npc={NPCS.hanne} />, position: [1.0, 0, -0.85], r: 0.3 },
+    { node: <NpcFigure npc={NPCS.hanne} />, position: [1.0, 0, -0.85], r: 0.3, npc: true },
   ],
   werkstatt: [
     { node: <Workbench />, position: [1.5, 0, -0.6], rotationY: 0.15, r: 0.78 },
     { node: <GrandfatherClock />, position: [2.7, 0, -1.4], rotationY: -0.3, r: 0.42 },
     { node: <Stool />, position: [0.65, 0, 0.35], r: 0.3 },
-    { node: <NpcFigure npc={NPCS.karl} />, position: [0.35, 0, -0.95], r: 0.3 },
+    { node: <NpcFigure npc={NPCS.karl} />, position: [0.35, 0, -0.95], r: 0.3, npc: true },
   ],
   wachstube: [
     { node: <Desk />, position: [1.7, 0, -0.8], rotationY: -0.2, r: 0.62 },
     { node: <Crate />, position: [2.8, 0, -0.1], rotationY: 0.7, r: 0.42 },
     { node: <Lantern />, position: [-2.8, 0, -1.2], r: 0.22 },
-    { node: <NpcFigure npc={NPCS.wache} />, position: [2.2, 0, -1.15], r: 0.3 },
+    { node: <NpcFigure npc={NPCS.wache} />, position: [2.2, 0, -1.15], r: 0.3, npc: true },
   ],
   gasse: [
     { node: <Barrel />, position: [1.15, 0, -0.35], r: 0.38 },
     { node: <Barrel />, position: [1.75, 0, -0.85], scale: 0.85, r: 0.38 },
     { node: <Crate />, position: [2.5, 0, 0.1], rotationY: 0.3, r: 0.42 },
     { node: <Lantern />, position: [-2.7, 0, -1.3], r: 0.22 },
-    { node: <NpcFigure npc={NPCS.kraehe} />, position: [-1.7, 0, -1.0], r: 0.3 },
+    { node: <NpcFigure npc={NPCS.kraehe} />, position: [-1.7, 0, -1.0], r: 0.3, npc: true },
   ],
   finale: [
     { node: <Crate />, position: [1.35, 0, -0.5], rotationY: 0.2, r: 0.42 },
@@ -58,20 +60,20 @@ export const PROP_SETS: Record<string, PropDef[]> = {
     { node: <Crate />, position: [1.65, 0.52, -0.4], rotationY: 0.55, scale: 0.9 },
     { node: <Barrel />, position: [2.85, 0, -1.0], r: 0.38 },
     { node: <Lantern />, position: [-2.8, 0, -1.1], r: 0.22 },
-    { node: <NpcFigure npc={NPCS.kraehe} />, position: [0.9, 0, -1.05], r: 0.3 },
+    { node: <NpcFigure npc={NPCS.kraehe} />, position: [0.9, 0, -1.05], r: 0.3, npc: true },
   ],
   kanal: [
     { node: <Bollard />, position: [0.9, 0, 0.5], r: 0.2 },
     { node: <Bollard />, position: [2.1, 0, 0.15], r: 0.2 },
     { node: <Crate />, position: [2.9, 0, -0.7], rotationY: 0.5, r: 0.42 },
     { node: <Lantern />, position: [-2.8, 0, -0.9], r: 0.22 },
-    { node: <NpcFigure npc={NPCS.junge} />, position: [-1.5, 0, -0.75], r: 0.28 },
+    { node: <NpcFigure npc={NPCS.junge} />, position: [-1.5, 0, -0.75], r: 0.28, npc: true },
   ],
   muehle: [
     { node: <Gear />, position: [2.7, 0, -1.3], r: 0.6 },
     { node: <Sacks />, position: [1.25, 0, -0.25], r: 0.52 },
     { node: <Barrel />, position: [2.0, 0, 0.35], scale: 0.9, r: 0.38 },
-    { node: <NpcFigure npc={NPCS.mueller} />, position: [0.5, 0, -0.9], r: 0.3 },
+    { node: <NpcFigure npc={NPCS.mueller} />, position: [0.5, 0, -0.9], r: 0.3, npc: true },
   ],
 }
 
@@ -85,6 +87,20 @@ export type Collider = { x: number; z: number; r: number }
  */
 export function stageSqueeze(viewportWidth: number): number {
   return Math.min(1, Math.max(0.55, viewportWidth / 8))
+}
+
+/**
+ * Wo der Auto-Walk in einer Szene enden soll: in guter Konstellation neben
+ * dem NPC (Blick zu ihm), sonst leicht neben der Bühnenmitte.
+ */
+export function getArrivalX(scene: string, squeeze: number, direction: 'left' | 'right'): number {
+  const npc = (PROP_SETS[scene] ?? []).find(def => def.npc)
+  if (npc) {
+    const nx = npc.position[0] * squeeze
+    const x = direction === 'right' ? nx - 0.95 : nx + 0.95
+    return Math.min(1.4, Math.max(-1.4, x))
+  }
+  return direction === 'right' ? -0.35 : 0.35
 }
 
 /** x/z-Kreis-Collider der Szene (für die Avatar-Bewegung). */

@@ -1,13 +1,6 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import {
-  DoubleSide,
-  MathUtils,
-  Vector3,
-  type Group,
-  type Mesh,
-  type MeshBasicMaterial,
-} from 'three'
+import { DoubleSide, MathUtils, Vector3, type Group, type Mesh } from 'three'
 import { spriteTexture, labelTexture, SPRITE_ASPECT } from './sprites'
 import { avatarPos } from './avatarState'
 import type { NpcSpec } from '../game/npcs'
@@ -29,8 +22,6 @@ export function NpcFigure({ npc }: { npc: NpcSpec }) {
   const height = BASE_HEIGHT * (npc.scale ?? 1)
   const width = height * SPRITE_ASPECT
   const phase = useRef(npc.id.length * 1.37)
-  const labelMaterial = useRef<MeshBasicMaterial>(null)
-  const shownFor = useRef(0)
 
   useFrame((state, delta) => {
     if (!mesh.current || !flip.current) return
@@ -42,12 +33,6 @@ export function NpcFigure({ npc }: { npc: NpcSpec }) {
     flip.current.getWorldPosition(worldPos)
     const facing = avatarPos.x >= worldPos.x ? 1 : -1
     flip.current.scale.x = MathUtils.damp(flip.current.scale.x, facing, 6, delta)
-
-    // Namensschild nach ein paar Sekunden ausblenden
-    shownFor.current += delta
-    if (labelMaterial.current && shownFor.current > 4) {
-      labelMaterial.current.opacity = MathUtils.damp(labelMaterial.current.opacity, 0, 4, delta)
-    }
   })
 
   return (
@@ -58,16 +43,10 @@ export function NpcFigure({ npc }: { npc: NpcSpec }) {
           <meshBasicMaterial map={texture} transparent alphaTest={0.5} side={DoubleSide} />
         </mesh>
       </group>
-      {/* Namensschild — immer im Vordergrund (kein Depth-Test, spät gezeichnet) */}
+      {/* Namensschild — dauerhaft sichtbar, immer im Vordergrund */}
       <mesh position={[0, height + 0.22, 0]} renderOrder={10}>
         <planeGeometry args={[LABEL_HEIGHT * label.aspect, LABEL_HEIGHT]} />
-        <meshBasicMaterial
-          ref={labelMaterial}
-          map={label.texture}
-          transparent
-          depthWrite={false}
-          depthTest={false}
-        />
+        <meshBasicMaterial map={label.texture} transparent depthWrite={false} depthTest={false} />
       </mesh>
     </group>
   )

@@ -46,6 +46,7 @@ export function Stage({
   onLeavingStage,
   autoWalk,
   onArrived,
+  onWalkInterrupt,
 }: {
   epoch: EpochId
   scene: string
@@ -59,6 +60,7 @@ export function Stage({
   onLeavingStage?: (leaving: boolean) => void
   autoWalk?: 'left' | 'right' | null
   onArrived?: () => void
+  onWalkInterrupt?: (stage: 'out' | 'in') => void
 }) {
   const lightColor = getEpoch(epoch).mood.light
   return (
@@ -80,6 +82,7 @@ export function Stage({
           onLeavingStage={onLeavingStage}
           autoWalk={autoWalk}
           onArrived={onArrived}
+          onWalkInterrupt={onWalkInterrupt}
         />
         <Atmosphere color={lightColor} />
         <Curtain closed={curtainClosed} />

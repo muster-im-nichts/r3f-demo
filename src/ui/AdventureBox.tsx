@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import type { StoryOption } from '../game/types'
 import { useTypewriter } from './useTypewriter'
-import { click } from '../audio/sfx'
+import { click, blip } from '../audio/sfx'
 import { MOVE_KEYS } from '../scene/moveKeys'
 import { isNarrowScreen } from './responsive'
+import {
+  isVoiceEnabled,
+  setVoiceEnabled,
+  speak,
+  stopSpeaking,
+  listenOnce,
+  sttAvailable,
+  matchChoice,
+} from '../audio/voice'
 
 /**
  * Die klassische Adventure-Textbox am unteren Bühnenrand: Typewriter-Text,
@@ -23,8 +32,42 @@ export function AdventureBox({
 }) {
   const { shown, done, skip } = useTypewriter(text)
   const [collapsed, setCollapsed] = useState(false)
+  const [voiceOn, setVoiceOn] = useState(isVoiceEnabled)
+  const [listening, setListening] = useState(false)
+  const [heard, setHeard] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const narrow = isNarrowScreen()
+
+  // Vorlesen: die Box wird pro Story-Knoten neu gemountet (key=node.id),
+  // also einmal beim Erscheinen sprechen; beim Abbau verstummen
+  useEffect(() => {
+    if (voiceOn) speak(text)
+    return () => stopSpeaking()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceOn])
+
+  const choose = (target: string) => {
+    stopSpeaking()
+    click()
+    onChoose(target)
+  }
+
+  const listenForChoice = async () => {
+    if (listening) return
+    stopSpeaking() // die eigene Vorlesestimme nicht mit aufnehmen
+    setListening(true)
+    setHeard(null)
+    const transcript = await listenOnce()
+    setListening(false)
+    if (!transcript) return
+    const index = matchChoice(transcript, options.map(o => o.label))
+    if (index >= 0 && options[index]) {
+      choose(options[index].target)
+    } else {
+      blip()
+      setHeard(transcript)
+    }
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -36,6 +79,7 @@ export function AdventureBox({
       }
       const index = ['1', '2', '3'].indexOf(e.key)
       if (index >= 0 && options[index]) {
+        stopSpeaking()
         click()
         onChoose(options[index].target)
       }
@@ -55,7 +99,8 @@ export function AdventureBox({
     left: '50%',
     bottom: 'max(12px, env(safe-area-inset-bottom))',
     transform: 'translateX(-50%)',
-    width: 'min(720px, calc(100% - 24px))',
+    // Volle Bildschirmbreite (mit Rand): eine flache Box lässt mehr Bühne frei
+    width: 'calc(100% - 24px)',
     background: 'rgba(23, 19, 31, 0.92)',
     border: '3px solid var(--color-panel-border)',
     borderRadius: '10px',
@@ -92,26 +137,43 @@ export function AdventureBox({
         overflowY: 'auto',
       }}
     >
-      {/* Einklappen, um die Szene freizugeben */}
-      <button
-        aria-label="Textbox einklappen"
-        onClick={e => {
-          e.stopPropagation()
-          setCollapsed(true)
-        }}
-        style={{
-          position: 'sticky',
-          top: 0,
-          float: 'right',
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--color-text-dim)',
-          fontSize: '14px',
-          padding: '0 2px 4px 10px',
-        }}
-      >
-        ▼
-      </button>
+      {/* Vorlesen an/aus + Einklappen, um die Szene freizugeben */}
+      <div style={{ position: 'sticky', top: 0, float: 'right', display: 'flex', gap: '2px' }}>
+        <button
+          aria-label={voiceOn ? 'Vorlesen ausschalten' : 'Vorlesen einschalten'}
+          onClick={e => {
+            e.stopPropagation()
+            const next = !voiceOn
+            setVoiceEnabled(next)
+            setVoiceOn(next)
+          }}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: voiceOn ? 'var(--color-gold)' : 'var(--color-text-dim)',
+            fontSize: '14px',
+            padding: '0 2px 4px 10px',
+          }}
+        >
+          {voiceOn ? '🔊' : '🔈'}
+        </button>
+        <button
+          aria-label="Textbox einklappen"
+          onClick={e => {
+            e.stopPropagation()
+            setCollapsed(true)
+          }}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--color-text-dim)',
+            fontSize: '14px',
+            padding: '0 2px 4px 10px',
+          }}
+        >
+          ▼
+        </button>
+      </div>
       <p
         style={{
           fontFamily: 'var(--font-text)',
@@ -128,21 +190,50 @@ export function AdventureBox({
       <div style={{ marginTop: '8px', animation: 'fade-in 0.25s ease-out' }}>
         <div
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
             fontFamily: 'var(--font-pixel)',
             fontSize: narrow ? '9px' : '11px',
             color: 'var(--color-gold)',
             margin: '2px 0 8px',
           }}
         >
-          Was machst du?
+          <span>Was machst du?</span>
+          {sttAvailable() && (
+            <button
+              aria-label="Antwort sprechen"
+              onClick={e => {
+                e.stopPropagation()
+                listenForChoice()
+              }}
+              style={{
+                background: 'transparent',
+                border: `2px solid ${listening ? 'var(--color-gold)' : 'transparent'}`,
+                borderRadius: '6px',
+                fontSize: '14px',
+                padding: '0 4px',
+                animation: listening ? 'pulse 1s infinite' : undefined,
+              }}
+            >
+              🎤
+            </button>
+          )}
+          {listening && (
+            <span style={{ color: 'var(--color-text-dim)' }}>Ich höre …</span>
+          )}
+          {heard && !listening && (
+            <span style={{ color: 'var(--color-text-dim)', fontFamily: 'var(--font-text)', fontSize: '14px' }}>
+              „{heard}“ — sag z.B. „die Erste“
+            </span>
+          )}
         </div>
         {options.map((option, i) => (
           <button
             key={option.target + option.label}
             onClick={() => {
               if (!done) return
-              click()
-              onChoose(option.target)
+              choose(option.target)
             }}
             style={{
               display: 'block',

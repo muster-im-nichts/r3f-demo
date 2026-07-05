@@ -112,6 +112,19 @@ export default function App() {
     finishNode(transit.nodeId)
   }
 
+  /** Bewegungstaste während des Auto-Walks: der Spieler übernimmt sofort */
+  const interruptWalk = (stage: 'out' | 'in') => {
+    if (!transit) return
+    if (stage === 'out') {
+      // Noch in der alten Szene: Wahl abbrechen, der Knoten bleibt aktiv
+      setTransit(null)
+      setWalkScene(null)
+    } else {
+      // Schon in der Zielszene: sofort ankommen statt weiterzulaufen
+      arrived()
+    }
+  }
+
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'var(--color-bg)' }}>
       <Stage
@@ -130,6 +143,7 @@ export default function App() {
         onLeavingStage={setLeaving}
         autoWalk={transit?.direction ?? null}
         onArrived={arrived}
+        onWalkInterrupt={interruptWalk}
       />
       <Letterbox />
 

@@ -74,6 +74,7 @@ export function Avatar({
   onLeavingStage,
   autoWalk,
   onArrived,
+  onWalkInterrupt,
 }: {
   character: Character
   speech?: string
@@ -86,6 +87,8 @@ export function Avatar({
   /** Story-Transit: Figur läuft automatisch in diese Richtung zur Zielszene */
   autoWalk?: 'left' | 'right' | null
   onArrived?: () => void
+  /** Spieler drückt während des Auto-Walks eine Bewegungstaste */
+  onWalkInterrupt?: (stage: 'out' | 'in') => void
 }) {
   const mesh = useRef<Mesh>(null)
   const texture = spriteTexture(character)
@@ -111,6 +114,9 @@ export function Avatar({
   // rein bis zur Ankunftsposition ('in')
   const transitStage = useRef<'out' | 'in'>('out')
   const arrivedNotified = useRef(false)
+  // Abbruch erst nach frischem Tastendruck: eine vom Rauslaufen noch
+  // gehaltene Taste soll den eben gestarteten Transit nicht sofort kippen
+  const interruptArmed = useRef(false)
   const squeeze = stageSqueeze(viewportWidth)
   const colliders = useMemo(() => getColliders(scene, squeeze), [scene, squeeze])
 
@@ -132,6 +138,7 @@ export function Avatar({
     if (autoWalk) {
       transitStage.current = 'out'
       arrivedNotified.current = false
+      interruptArmed.current = false
     }
   }, [autoWalk])
 
@@ -162,6 +169,10 @@ export function Avatar({
   // Die neue Bühne gilt sofort als betreten — Props fahren direkt hoch.
   useEffect(() => {
     if (!pendingExit.current) return
+    // Auftritt immer auf der freien Front-Spur: die Tiefe der alten Szene
+    // mitzunehmen hieße, in der neuen hinter Requisiten hängen zu bleiben
+    pos.current.z = START_Z
+    avatarPos.z = START_Z
     // knapp außerhalb des Bildrands der frisch geschnittenen Kamera auftreten
     const halfView =
       Math.tan((FOV * Math.PI) / 360) * (CAMERA_Z - pos.current.z) * viewportAspect
@@ -184,6 +195,13 @@ export function Avatar({
     let vx = (moveInput.has('right') ? 1 : 0) - (moveInput.has('left') ? 1 : 0)
     let vz = (moveInput.has('front') ? 1 : 0) - (moveInput.has('back') ? 1 : 0)
     if (autoWalk) {
+      // Frischer Tastendruck bricht den Auto-Walk ab — der Spieler übernimmt
+      if (moveInput.size === 0) {
+        interruptArmed.current = true
+      } else if (interruptArmed.current && onWalkInterrupt) {
+        interruptArmed.current = false
+        onWalkInterrupt(transitStage.current)
+      }
       vx = autoWalk === 'right' ? 1 : -1
       vz = 0
     }

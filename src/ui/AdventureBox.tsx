@@ -27,12 +27,15 @@ export function AdventureBox({
   text,
   options,
   onChoose,
+  instant = false,
 }: {
   text: string
   options: StoryOption[]
   onChoose: (target: string) => void
+  /** Text sofort komplett zeigen (Knoten wurde schon einmal gelesen) */
+  instant?: boolean
 }) {
-  const { shown, done, skip } = useTypewriter(text)
+  const { shown, done, skip } = useTypewriter(text, instant)
   const [collapsed, setCollapsed] = useState(false)
   const [voiceOn, setVoiceOn] = useState(isVoiceEnabled)
   const [listening, setListening] = useState(false)
@@ -41,9 +44,10 @@ export function AdventureBox({
   const narrow = isNarrowScreen()
 
   // Vorlesen: die Box wird pro Story-Knoten neu gemountet (key=node.id),
-  // also einmal beim Erscheinen sprechen; beim Abbau verstummen
+  // also einmal beim Erscheinen sprechen; beim Abbau verstummen. Bereits
+  // gelesene Knoten (instant) werden nicht erneut vorgelesen.
   useEffect(() => {
-    if (voiceOn) speak(text)
+    if (voiceOn && !instant) speak(text)
     return () => stopSpeaking()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voiceOn])

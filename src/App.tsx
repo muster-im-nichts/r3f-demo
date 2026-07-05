@@ -31,10 +31,13 @@ export default function App() {
   // Spieler ist gerade dabei, die Bühne zu verlassen (Props versinken schon)
   const [leaving, setLeaving] = useState(false)
   const [transit, setTransit] = useState<Transit | null>(null)
+  // Knoten-Text wurde schon gelesen (Auto-Walk abgebrochen): sofort komplett zeigen
+  const [instantText, setInstantText] = useState(false)
 
   const nodeId = phase.kind === 'start' ? null : phase.nodeId
   useEffect(() => {
     setWalkScene(null) // Story-Fortschritt holt die Bühne zur Knoten-Szene zurück
+    setInstantText(false) // neuer Knoten = neuer Text, wieder mit Typewriter
   }, [nodeId])
 
   if (phase.kind === 'start' || !setup) {
@@ -116,7 +119,9 @@ export default function App() {
   const interruptWalk = (stage: 'out' | 'in') => {
     if (!transit) return
     if (stage === 'out') {
-      // Noch in der alten Szene: Wahl abbrechen, der Knoten bleibt aktiv
+      // Noch in der alten Szene: Wahl abbrechen, der Knoten bleibt aktiv —
+      // sein Text wurde schon gelesen und erscheint sofort komplett
+      setInstantText(true)
       setTransit(null)
       setWalkScene(null)
     } else {
@@ -154,6 +159,7 @@ export default function App() {
             text={resolveText(node.text, setup)}
             options={node.options}
             onChoose={choose}
+            instant={instantText}
           />
           <Signposts
             left={exits.left ? sceneLabel(getNode(campaign, exits.left.target).scene) : undefined}

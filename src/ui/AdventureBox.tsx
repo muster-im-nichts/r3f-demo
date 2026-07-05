@@ -184,7 +184,7 @@ export function AdventureBox({
       <p
         style={{
           fontFamily: 'var(--font-text)',
-          fontSize: narrow ? '15px' : 'clamp(16px, 4.4vw, 24px)',
+          fontSize: narrow ? '16px' : 'clamp(17px, 4.4vw, 28px)',
           lineHeight: 1.25,
           minHeight: '1.3em',
           color: 'var(--color-text)',
@@ -235,33 +235,42 @@ export function AdventureBox({
             </span>
           )}
         </div>
-        {options.map((option, i) => (
-          <button
-            key={option.target + option.label}
-            onClick={() => {
-              if (!done) return
-              choose(option.target)
-            }}
-            style={{
-              display: 'block',
-              width: '100%',
-              textAlign: 'left',
-              background: 'transparent',
-              border: '2px solid transparent',
-              borderRadius: '6px',
-              color: 'var(--color-text)',
-              fontFamily: 'var(--font-text)',
-              fontSize: narrow ? '14px' : 'clamp(15px, 4vw, 22px)',
-              padding: narrow ? '7px 8px' : '6px 10px',
-              marginBottom: '2px',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--color-gold-dim)')}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = 'transparent')}
-          >
-            <span style={{ color: 'var(--color-gold)', marginRight: '10px' }}>{i + 1}.</span>
-            {option.label}
-          </button>
-        ))}
+        {/* Schaltflächen, die sich bei Platz nebeneinander aufreihen */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: narrow ? '6px' : '10px' }}>
+          {options.map((option, i) => (
+            <button
+              key={option.target + option.label}
+              onClick={() => {
+                if (!done) return
+                choose(option.target)
+              }}
+              style={{
+                flex: '1 1 240px',
+                minHeight: '44px',
+                textAlign: 'center',
+                background: 'var(--color-panel)',
+                border: '2px solid var(--color-panel-border)',
+                borderRadius: '8px',
+                color: 'var(--color-text)',
+                fontFamily: 'var(--font-text)',
+                fontSize: narrow ? '15px' : 'clamp(16px, 4vw, 24px)',
+                lineHeight: 1.15,
+                padding: narrow ? '8px 10px' : '8px 14px',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = 'var(--color-gold)'
+                e.currentTarget.style.background = 'rgba(217, 164, 65, 0.14)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'var(--color-panel-border)'
+                e.currentTarget.style.background = 'var(--color-panel)'
+              }}
+            >
+              <span style={{ color: 'var(--color-gold)', marginRight: '10px' }}>{i + 1}.</span>
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
       )}
     </div>

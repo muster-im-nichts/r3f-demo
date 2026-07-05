@@ -29,10 +29,10 @@ Dann http://localhost:5173 öffnen (auch am Smartphone im selben Netz nutzbar,
 
 ## Sprache (TTS/STT)
 
-Der 🔊-Knopf in der Textbox liest die Geschichte vor, der 🎤-Knopf wählt
-Optionen per Sprache ("die Erste", "zwei", oder Worte aus der Option).
-Ohne Konfiguration spricht die Browser-Stimme (Web Speech API). Für
-ElevenLabs-Qualität eine `.env` anlegen:
+Das Sprachfeature erscheint nur, wenn ein ElevenLabs-Key gesetzt ist —
+dann liest der Lautsprecher-Knopf in der Textbox die Geschichte vor
+(ElevenLabs TTS) und der Mikrofon-Knopf wählt Optionen per Sprache
+("die Erste", "zwei", oder Worte aus der Option). Dazu eine `.env` anlegen:
 
 ```
 VITE_ELEVENLABS_API_KEY=…

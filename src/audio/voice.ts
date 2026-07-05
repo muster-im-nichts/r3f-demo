@@ -1,14 +1,15 @@
 /**
  * Sprachausgabe (TTS) und Spracheingabe (STT) für den Prototyp.
  *
- * TTS: Mit gesetztem VITE_ELEVENLABS_API_KEY spricht ElevenLabs
- * (eleven_multilingual_v2, deutsche Aussprache), ohne Key die Web Speech API
- * des Browsers. Achtung: Der Key landet im Client-Bundle — für Demo/Kiosk
- * vertretbar, in Produktion gehört ein kleiner Proxy davor.
+ * Das gesamte Sprachfeature existiert nur mit gesetztem
+ * VITE_ELEVENLABS_API_KEY (voiceAvailable) — ohne Key zeigt die UI keine
+ * Sprach-Knöpfe und es gibt keinen Browser-Stimmen-Fallback. Achtung: Der
+ * Key landet im Client-Bundle — für Demo/Kiosk vertretbar, in Produktion
+ * gehört ein kleiner Proxy davor.
  *
- * STT: Web Speech API (de-DE) — latenzfrei und ohne Upload, im Chrome-Kiosk
- * zuverlässig. ElevenLabs Scribe kann später hinter dieselbe Schnittstelle
- * (listenOnce) gelegt werden, ohne dass die UI sich ändert.
+ * STT läuft (hinterm Key-Gate) über die Web Speech API (de-DE) — latenzfrei
+ * und ohne Upload. ElevenLabs Scribe kann später hinter dieselbe
+ * Schnittstelle (listenOnce) gelegt werden, ohne dass die UI sich ändert.
  */
 
 const ELEVEN_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined
@@ -16,6 +17,11 @@ const ELEVEN_VOICE =
   (import.meta.env.VITE_ELEVENLABS_VOICE_ID as string | undefined) ?? '21m00Tcm4TlvDq8ikWAM'
 
 const VOICE_KEY = 'ebw-voice'
+
+/** Nur mit ElevenLabs-Key gibt es das Sprachfeature überhaupt */
+export function voiceAvailable(): boolean {
+  return Boolean(ELEVEN_KEY)
+}
 
 export function isVoiceEnabled(): boolean {
   return localStorage.getItem(VOICE_KEY) === '1'
@@ -30,7 +36,6 @@ export function setVoiceEnabled(value: boolean): void {
 // TTS
 
 let currentAudio: HTMLAudioElement | null = null
-let speakingViaBrowser = false
 /** Wiederholtes Vorlesen desselben Textes trifft den Cache statt die API */
 const ttsCache = new Map<string, string>()
 
@@ -39,23 +44,16 @@ export function stopSpeaking(): void {
     currentAudio.pause()
     currentAudio = null
   }
-  if (speakingViaBrowser) {
-    window.speechSynthesis?.cancel()
-    speakingViaBrowser = false
-  }
 }
 
 export async function speak(text: string): Promise<void> {
   stopSpeaking()
-  if (ELEVEN_KEY) {
-    try {
-      await speakEleven(text)
-      return
-    } catch {
-      // API nicht erreichbar/Quota: leise auf die Browser-Stimme ausweichen
-    }
+  if (!ELEVEN_KEY) return
+  try {
+    await speakEleven(text)
+  } catch {
+    // API nicht erreichbar/Quota: still bleiben statt Stilbruch per Browser-Stimme
   }
-  speakBrowser(text)
 }
 
 async function speakEleven(text: string): Promise<void> {
@@ -76,20 +74,6 @@ async function speakEleven(text: string): Promise<void> {
   const audio = new Audio(url)
   currentAudio = audio
   await audio.play()
-}
-
-function speakBrowser(text: string): void {
-  const synth = window.speechSynthesis
-  if (!synth) return
-  const utterance = new SpeechSynthesisUtterance(text)
-  utterance.lang = 'de-DE'
-  const voice = synth.getVoices().find(v => v.lang.startsWith('de'))
-  if (voice) utterance.voice = voice
-  speakingViaBrowser = true
-  utterance.onend = () => {
-    speakingViaBrowser = false
-  }
-  synth.speak(utterance)
 }
 
 // ---------------------------------------------------------------------------

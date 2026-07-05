@@ -5,6 +5,7 @@ import { click, blip } from '../audio/sfx'
 import { MOVE_KEYS } from '../scene/moveKeys'
 import { isNarrowScreen } from './responsive'
 import {
+  voiceAvailable,
   isVoiceEnabled,
   setVoiceEnabled,
   speak,
@@ -13,6 +14,7 @@ import {
   sttAvailable,
   matchChoice,
 } from '../audio/voice'
+import { SpeakerIcon, MicIcon } from './icons'
 
 /**
  * Die klassische Adventure-Textbox am unteren Bühnenrand: Typewriter-Text,
@@ -139,24 +141,25 @@ export function AdventureBox({
     >
       {/* Vorlesen an/aus + Einklappen, um die Szene freizugeben */}
       <div style={{ position: 'sticky', top: 0, float: 'right', display: 'flex', gap: '2px' }}>
-        <button
-          aria-label={voiceOn ? 'Vorlesen ausschalten' : 'Vorlesen einschalten'}
-          onClick={e => {
-            e.stopPropagation()
-            const next = !voiceOn
-            setVoiceEnabled(next)
-            setVoiceOn(next)
-          }}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: voiceOn ? 'var(--color-gold)' : 'var(--color-text-dim)',
-            fontSize: '14px',
-            padding: '0 2px 4px 10px',
-          }}
-        >
-          {voiceOn ? '🔊' : '🔈'}
-        </button>
+        {voiceAvailable() && (
+          <button
+            aria-label={voiceOn ? 'Vorlesen ausschalten' : 'Vorlesen einschalten'}
+            onClick={e => {
+              e.stopPropagation()
+              const next = !voiceOn
+              setVoiceEnabled(next)
+              setVoiceOn(next)
+            }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: voiceOn ? 'var(--color-gold)' : 'var(--color-text-dim)',
+              padding: '2px 2px 4px 10px',
+            }}
+          >
+            <SpeakerIcon on={voiceOn} size={15} />
+          </button>
+        )}
         <button
           aria-label="Textbox einklappen"
           onClick={e => {
@@ -200,7 +203,7 @@ export function AdventureBox({
           }}
         >
           <span>Was machst du?</span>
-          {sttAvailable() && (
+          {voiceAvailable() && sttAvailable() && (
             <button
               aria-label="Antwort sprechen"
               onClick={e => {
@@ -211,12 +214,12 @@ export function AdventureBox({
                 background: 'transparent',
                 border: `2px solid ${listening ? 'var(--color-gold)' : 'transparent'}`,
                 borderRadius: '6px',
-                fontSize: '14px',
-                padding: '0 4px',
+                color: 'var(--color-gold)',
+                padding: '2px 4px',
                 animation: listening ? 'pulse 1s infinite' : undefined,
               }}
             >
-              🎤
+              <MicIcon size={14} />
             </button>
           )}
           {listening && (

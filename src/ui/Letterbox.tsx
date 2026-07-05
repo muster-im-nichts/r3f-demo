@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { isMuted, setMuted } from '../audio/audio'
+import { SpeakerIcon } from './icons'
 
 const barStyle = {
   position: 'absolute' as const,
@@ -43,14 +44,15 @@ export function Letterbox() {
           pointerEvents: 'auto',
           width: '44px',
           height: '44px',
+          display: 'grid',
+          placeItems: 'center',
           background: 'rgba(23, 19, 31, 0.85)',
           border: '2px solid var(--color-panel-border)',
           borderRadius: '8px',
-          fontSize: '20px',
-          color: 'var(--color-text)',
+          color: muted ? 'var(--color-text-dim)' : 'var(--color-gold)',
         }}
       >
-        {muted ? '🔇' : '🔊'}
+        <SpeakerIcon on={!muted} size={20} />
       </button>
     </div>
   )

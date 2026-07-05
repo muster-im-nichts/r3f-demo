@@ -217,11 +217,13 @@ export function Gear() {
           )
         })}
       </group>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.08, 0.08, 0.3, 8]} />
+      {/* Achse reicht nach hinten bis in den Ständer */}
+      <mesh position={[0, 0, -0.1]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.08, 0.08, 0.4, 8]} />
         <meshStandardMaterial color={METAL} />
       </mesh>
-      <mesh position={[0, -0.55, 0]}>
+      {/* Ständer hinter dem Rad, damit die Zähne nicht durchschlagen */}
+      <mesh position={[0, -0.55, -0.18]}>
         <boxGeometry args={[0.14, 1.0, 0.14]} />
         <meshStandardMaterial color={WOOD_DARK} />
       </mesh>

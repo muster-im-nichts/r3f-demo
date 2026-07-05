@@ -36,8 +36,15 @@ dann liest der Lautsprecher-Knopf in der Textbox die Geschichte vor
 
 ```
 VITE_ELEVENLABS_API_KEY=…
-VITE_ELEVENLABS_VOICE_ID=…   # optional
+VITE_ELEVENLABS_VOICE_ID=…   # optional, überschreibt die Erzählstimme
 ```
+
+Die Stimmen sind in `src/audio/voices.json` unter semantischen Keys
+("narrator", "old-woman", …) verwaltet — Charaktere und NPCs referenzieren
+nur den Key (`voice: 'old-woman'`), die IDs werden zentral gepflegt.
+Beim Wählen einer Option wird die Sprachausgabe des Zielknotens schon
+vorgeneriert; der Typewriter startet erst mit der Wiedergabe, damit Text
+und Stimme zusammen beginnen.
 
 Achtung: Der Key landet im Client-Bundle — nur für Demo/Kiosk geeignet,
 in Produktion gehört ein kleiner Proxy davor.

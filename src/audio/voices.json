@@ -1,0 +1,47 @@
+{
+  "narrator": {
+    "name": "Adam",
+    "id": "pNInz6obpgDQGcFmaJgB",
+    "description": "Tiefe, ruhige Erzählstimme; überzeugendes Deutsch — Standard für den Story-Text"
+  },
+  "narrator-female": {
+    "name": "Serena",
+    "id": "pMsXgVXv3BLzUgSXRplE",
+    "description": "Angenehme, reife Frauenstimme; gutes Deutsch — alternative Erzählerin"
+  },
+  "young-woman": {
+    "name": "Matilda",
+    "id": "XrExE9yKIg1WjnnlVkGX",
+    "description": "Warme junge Frauenstimme; gutes Deutsch — Greta, Lotte"
+  },
+  "soft-woman": {
+    "name": "Sarah",
+    "id": "EXAVITQu4vr4xnSDxMaL",
+    "description": "Weiche junge Frauenstimme; gutes Deutsch"
+  },
+  "young-man": {
+    "name": "Antoni",
+    "id": "ErXwobaYiN019PkySvjV",
+    "description": "Ausgewogene junge Männerstimme; gutes Deutsch — Wilhelm, Karl"
+  },
+  "old-woman": {
+    "name": "Lily",
+    "id": "pFZP5JQG7iQjIQuC4Bku",
+    "description": "Raue, reifere Frauenstimme — nächstliegende Premade für alte Frauen (Hanne)"
+  },
+  "old-man": {
+    "name": "James",
+    "id": "ZQe5CZNOzWyzPSCn5a3c",
+    "description": "Ruhige alte Männerstimme — Müller, Wachtmeister"
+  },
+  "gruff-man": {
+    "name": "George",
+    "id": "JBFqnCBsd6RMkjVDRZzb",
+    "description": "Raue, kernige Männerstimme — Wache, Brigadier, die Krähe"
+  },
+  "child": {
+    "name": "Gigi",
+    "id": "jBpfuIE2acCO8z3wKNLl",
+    "description": "Kindliche Stimme — Müllerjunge"
+  }
+}

@@ -12,9 +12,19 @@
  * Schnittstelle (listenOnce) gelegt werden, ohne dass die UI sich ändert.
  */
 
+import VOICES from './voices.json'
+
 const ELEVEN_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined
-const ELEVEN_VOICE =
-  (import.meta.env.VITE_ELEVENLABS_VOICE_ID as string | undefined) ?? '21m00Tcm4TlvDq8ikWAM'
+/** Optionaler Override für die Erzählstimme (sonst voices.json → narrator) */
+const ENV_VOICE = import.meta.env.VITE_ELEVENLABS_VOICE_ID as string | undefined
+
+/** Semantischer Stimm-Key ("narrator", "old-woman" …) aus src/audio/voices.json */
+export type VoiceKey = keyof typeof VOICES
+
+function resolveVoiceId(key: string): string {
+  if (key === 'narrator' && ENV_VOICE) return ENV_VOICE
+  return (VOICES as Record<string, { id: string }>)[key]?.id ?? VOICES.narrator.id
+}
 
 const VOICE_KEY = 'ebw-voice'
 
@@ -36,8 +46,11 @@ export function setVoiceEnabled(value: boolean): void {
 // TTS
 
 let currentAudio: HTMLAudioElement | null = null
-/** Wiederholtes Vorlesen desselben Textes trifft den Cache statt die API */
-const ttsCache = new Map<string, string>()
+/**
+ * Cache pro (Stimme, Text) — hält die *Promises*, damit ein Prefetch und ein
+ * direkt folgendes speak() dieselbe API-Anfrage teilen statt doppelt zu zahlen.
+ */
+const ttsCache = new Map<string, Promise<string>>()
 
 export function stopSpeaking(): void {
   if (currentAudio) {
@@ -46,21 +59,13 @@ export function stopSpeaking(): void {
   }
 }
 
-export async function speak(text: string): Promise<void> {
-  stopSpeaking()
-  if (!ELEVEN_KEY) return
-  try {
-    await speakEleven(text)
-  } catch {
-    // API nicht erreichbar/Quota: still bleiben statt Stilbruch per Browser-Stimme
-  }
-}
-
-async function speakEleven(text: string): Promise<void> {
-  let url = ttsCache.get(text)
-  if (!url) {
+function ensureTtsUrl(text: string, voiceId: string): Promise<string> {
+  const cacheKey = `${voiceId}|${text}`
+  const cached = ttsCache.get(cacheKey)
+  if (cached) return cached
+  const pending = (async () => {
     const res = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN_VOICE}?output_format=mp3_44100_64`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_64`,
       {
         method: 'POST',
         headers: { 'xi-api-key': ELEVEN_KEY!, 'Content-Type': 'application/json' },
@@ -68,12 +73,35 @@ async function speakEleven(text: string): Promise<void> {
       },
     )
     if (!res.ok) throw new Error(`ElevenLabs TTS: HTTP ${res.status}`)
-    url = URL.createObjectURL(await res.blob())
-    ttsCache.set(text, url)
+    return URL.createObjectURL(await res.blob())
+  })()
+  // Fehlgeschlagene Anfragen nicht cachen, sonst bleibt der Knoten für immer stumm
+  pending.catch(() => ttsCache.delete(cacheKey))
+  ttsCache.set(cacheKey, pending)
+  return pending
+}
+
+/**
+ * Generierung schon anstoßen, während die Figur noch zur Szene läuft —
+ * das speak() beim Einblenden der Textbox trifft dann den Cache und startet
+ * (nahezu) sofort mit dem Text zusammen.
+ */
+export function prefetchSpeech(text: string, voice: string = 'narrator'): void {
+  if (!ELEVEN_KEY || !isVoiceEnabled()) return
+  ensureTtsUrl(text, resolveVoiceId(voice)).catch(() => {})
+}
+
+export async function speak(text: string, voice: string = 'narrator'): Promise<void> {
+  stopSpeaking()
+  if (!ELEVEN_KEY) return
+  try {
+    const url = await ensureTtsUrl(text, resolveVoiceId(voice))
+    const audio = new Audio(url)
+    currentAudio = audio
+    await audio.play()
+  } catch {
+    // API nicht erreichbar/Quota: still bleiben statt Stilbruch per Browser-Stimme
   }
-  const audio = new Audio(url)
-  currentAudio = audio
-  await audio.play()
 }
 
 // ---------------------------------------------------------------------------

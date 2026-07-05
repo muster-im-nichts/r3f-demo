@@ -9,11 +9,14 @@ export interface NpcSpec {
   name: string
   sprite: SpriteSpec
   scale?: number
+  /** Semantischer Stimm-Key aus src/audio/voices.json */
+  voice?: string
 }
 
 export const NPCS: Record<string, NpcSpec> = {
   hanne: {
     id: 'npc-hanne',
+    voice: 'old-woman',
     name: 'Hanne',
     sprite: {
       skin: '#e0b18c',
@@ -28,6 +31,7 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   karl: {
     id: 'npc-karl',
+    voice: 'young-man',
     name: 'Karl',
     sprite: {
       skin: '#ecc9a0',
@@ -43,6 +47,7 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   wache: {
     id: 'npc-wache',
+    voice: 'gruff-man',
     name: 'Wache',
     sprite: {
       skin: '#e0b18c',
@@ -57,6 +62,7 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   kraehe: {
     id: 'npc-kraehe',
+    voice: 'gruff-man',
     name: 'die Krähe',
     sprite: {
       skin: '#d8c0a8',
@@ -71,6 +77,7 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   mueller: {
     id: 'npc-mueller',
+    voice: 'old-man',
     name: 'Müller',
     sprite: {
       skin: '#e8c49a',
@@ -85,6 +92,7 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   junge: {
     id: 'npc-junge',
+    voice: 'child',
     name: 'Müllerjunge',
     sprite: {
       skin: '#ecc9a0',
@@ -100,6 +108,7 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   schaffner: {
     id: 'npc-schaffner',
+    voice: 'narrator',
     name: 'Schaffner',
     sprite: {
       skin: '#e8c49a',
@@ -114,6 +123,7 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   brigadier: {
     id: 'npc-brigadier',
+    voice: 'gruff-man',
     name: 'Brigadier',
     sprite: {
       skin: '#dba578',

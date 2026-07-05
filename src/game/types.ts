@@ -56,6 +56,8 @@ export interface Character {
   name: string
   description: string
   sprite: SpriteSpec
+  /** Semantischer Stimm-Key aus src/audio/voices.json (z.B. "young-woman") */
+  voice: string
 }
 
 export interface EpochInfo {

@@ -14,6 +14,7 @@ import { Signposts } from './ui/Signposts'
 import { ensureAudio } from './audio/audio'
 import { startMusic } from './audio/sequencer'
 import { success, failure } from './audio/sfx'
+import { prefetchSpeech } from './audio/voice'
 
 type Phase =
   | { kind: 'start' }
@@ -73,8 +74,14 @@ export default function App() {
     }
   }
 
+  /** Sprachausgabe des Zielknotens schon während Lauf/Übergang generieren */
+  const prefetchNode = (target: NodeId) => {
+    prefetchSpeech(resolveText(getNode(campaign, target).text, setup))
+  }
+
   /** Option gewählt: liegt das Ziel woanders, läuft die Figur erst hin */
   const choose = (target: NodeId) => {
+    prefetchNode(target)
     const targetScene = getNode(campaign, target).scene
     if (targetScene === scene) {
       finishNode(target)
@@ -104,6 +111,7 @@ export default function App() {
     const exit = exits[direction]
     if (!exit) return
     // Mit den Füßen entschieden: Ausgang gehört zu einer Story-Option
+    prefetchNode(exit.target)
     setTransit({ nodeId: exit.target, direction })
     setWalkScene(getNode(campaign, exit.target).scene)
   }

@@ -5,6 +5,7 @@ export const CHARACTERS: Character[] = [
     id: 'greta',
     name: 'Greta',
     description: 'Marktfrau mit wachen Augen. Kennt jeden in der Innenstadt.',
+    voice: 'narrator-female',
     sprite: {
       skin: '#e8b48a',
       hair: '#6b3a1f',
@@ -20,6 +21,7 @@ export const CHARACTERS: Character[] = [
     id: 'wilhelm',
     name: 'Wilhelm',
     description: 'Uhrmachergeselle. Ruhige Hände, neugieriger Kopf.',
+    voice: 'young-man',
     sprite: {
       skin: '#e8c49a',
       hair: '#2e2620',
@@ -35,6 +37,7 @@ export const CHARACTERS: Character[] = [
     id: 'lotte',
     name: 'Lotte',
     description: 'Botenmädchen. Schnell zu Fuß, schneller im Denken.',
+    voice: 'young-woman',
     sprite: {
       skin: '#dba578',
       hair: '#1f1a2e',

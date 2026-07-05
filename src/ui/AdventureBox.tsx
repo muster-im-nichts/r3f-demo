@@ -35,20 +35,38 @@ export function AdventureBox({
   /** Text sofort komplett zeigen (Knoten wurde schon einmal gelesen) */
   instant?: boolean
 }) {
-  const { shown, done, skip } = useTypewriter(text, instant)
   const [collapsed, setCollapsed] = useState(false)
   const [voiceOn, setVoiceOn] = useState(isVoiceEnabled)
+  // Typewriter erst starten, wenn die Stimme wirklich spielt — sonst liest
+  // man schon und die Stimme setzt verspätet ein
+  const [voiceHold, setVoiceHold] = useState(
+    () => voiceAvailable() && isVoiceEnabled() && !instant,
+  )
   const [listening, setListening] = useState(false)
   const [heard, setHeard] = useState<string | null>(null)
+  const { shown, done, skip } = useTypewriter(text, instant, voiceHold)
   const scrollRef = useRef<HTMLDivElement>(null)
   const narrow = isNarrowScreen()
 
   // Vorlesen: die Box wird pro Story-Knoten neu gemountet (key=node.id),
   // also einmal beim Erscheinen sprechen; beim Abbau verstummen. Bereits
-  // gelesene Knoten (instant) werden nicht erneut vorgelesen.
+  // gelesene Knoten (instant) werden nicht erneut vorgelesen. speak()
+  // resolved beim Wiedergabestart und löst dann den Typewriter aus; ein
+  // Timeout verhindert, dass eine lahme API das Lesen blockiert.
   useEffect(() => {
-    if (voiceOn && !instant) speak(text)
-    return () => stopSpeaking()
+    if (!voiceOn || instant) {
+      setVoiceHold(false)
+      return
+    }
+    let active = true
+    const release = () => active && setVoiceHold(false)
+    const fallback = setTimeout(release, 3000)
+    speak(text).finally(release)
+    return () => {
+      active = false
+      clearTimeout(fallback)
+      stopSpeaking()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voiceOn])
 

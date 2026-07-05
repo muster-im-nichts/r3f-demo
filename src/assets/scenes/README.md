@@ -13,7 +13,13 @@ Fehlt beides, generiert die App automatisch einen Pixel-Platzhalter.
 
 ## Aktuell verwendete Szenen-Keys
 
-- Krimi "Die gestohlene Taschenuhr": `marktplatz`, `werkstatt`, `wachstube`, `gasse`, `finale`
-- Heldengeschichte "Die Nacht des Hochwassers": `kanal`, `marktplatz`, `muehle`
+Jede Epoche×Genre-Kombination hat ihre eigene Kampagne:
+
+- 1760 Krimi "Die gestohlene Taschenuhr": `marktplatz`, `werkstatt`, `wachstube`, `gasse`, `finale`
+- 1760 Helden "Die Nacht des Hochwassers": `kanal`, `marktplatz`, `muehle`
+- 1860 Krimi "Die Lohnkasse aus dem Nachtzug": `bahnhof`, `wachstube`, `gasse`, `finale`
+- 1860 Helden "Funkenflug": `bahnhof`, `marktplatz`, `kanal`, `muehle`
+- 1960 Krimi "Die verschwundenen Blaupausen": `fabrik`, `wachstube`, `marktplatz`, `gasse`, `finale`
+- 1960 Helden "Kohle auf dem Eis": `kanal`, `fabrik`, `marktplatz`, `muehle`
 
 Epochen: `1760`, `1860`, `1960`.

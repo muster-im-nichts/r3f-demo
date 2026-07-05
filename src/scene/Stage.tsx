@@ -40,6 +40,7 @@ export function Stage({
   character,
   speech,
   curtainClosed,
+  exits,
   onExitStage,
   leaving,
   onLeavingStage,
@@ -51,6 +52,8 @@ export function Stage({
   character: Character
   speech?: string
   curtainClosed: boolean
+  /** Begehbare Bühnenausgänge — gesperrte Seiten stoppen die Figur am Bildrand */
+  exits: { left: boolean; right: boolean }
   onExitStage?: (direction: 'left' | 'right') => void
   leaving: boolean
   onLeavingStage?: (leaving: boolean) => void
@@ -72,6 +75,7 @@ export function Stage({
           character={character}
           speech={speech}
           scene={scene}
+          exits={exits}
           onExitStage={onExitStage}
           onLeavingStage={onLeavingStage}
           autoWalk={autoWalk}

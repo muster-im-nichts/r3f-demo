@@ -7,6 +7,8 @@ export const SCENE_LABELS: Record<string, string> = {
   finale: 'Lagerhaus',
   kanal: 'Kanal',
   muehle: 'Mühle',
+  bahnhof: 'Bahnhof',
+  fabrik: 'Kranwerk',
 }
 
 export function sceneLabel(key: string): string {

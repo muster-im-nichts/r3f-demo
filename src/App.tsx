@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Ending, GameSetup, NodeId } from './game/types'
-import { CAMPAIGNS } from './game/campaigns'
+import { getCampaign } from './game/campaigns'
 import { collectScenes, deriveExits, getNode, resolveText } from './game/engine'
 import { sceneLabel } from './game/scenes'
 import { preloadScenes } from './scene/textures'
@@ -44,15 +44,16 @@ export default function App() {
           // Audio synchron in der User-Geste initialisieren (Autoplay-Policy)
           ensureAudio()
           startMusic()
-          preloadScenes(next.epoch, collectScenes(CAMPAIGNS[next.genre]))
+          const campaign = getCampaign(next.epoch, next.genre)
+          preloadScenes(next.epoch, collectScenes(campaign))
           setSetup(next)
-          setPhase({ kind: 'playing', nodeId: CAMPAIGNS[next.genre].start })
+          setPhase({ kind: 'playing', nodeId: campaign.start })
         }}
       />
     )
   }
 
-  const campaign = CAMPAIGNS[setup.genre]
+  const campaign = getCampaign(setup.epoch, setup.genre)
   const node = getNode(campaign, phase.nodeId)
   const scene = walkScene ?? node.scene
   const exits = phase.kind === 'playing' && !transit ? deriveExits(campaign, node) : {}
@@ -87,7 +88,9 @@ export default function App() {
     setTransit({ nodeId: target, direction })
   }
 
-  // Bühnenrand erreicht (zu Fuß oder im Transit)
+  // Bühnenrand erreicht (zu Fuß oder im Transit). Ohne Story-Ausgang in der
+  // Richtung stoppt der Avatar schon vorher am Bildrand — kein freies
+  // Herauslaufen aus der Geschichte.
   const exitStage = (direction: 'left' | 'right') => {
     if (phase.kind !== 'playing') return
     if (transit) {
@@ -96,17 +99,10 @@ export default function App() {
       return
     }
     const exit = exits[direction]
-    if (exit) {
-      // Mit den Füßen entschieden: Ausgang gehört zu einer Story-Option
-      setTransit({ nodeId: exit.target, direction })
-      setWalkScene(getNode(campaign, exit.target).scene)
-      return
-    }
-    // Freies Erkunden: zur Nachbarszene der Kampagne (mit Umlauf)
-    const scenes = collectScenes(campaign)
-    const index = scenes.indexOf(scene)
-    const step = direction === 'right' ? 1 : -1
-    setWalkScene(scenes[(index + step + scenes.length) % scenes.length])
+    if (!exit) return
+    // Mit den Füßen entschieden: Ausgang gehört zu einer Story-Option
+    setTransit({ nodeId: exit.target, direction })
+    setWalkScene(getNode(campaign, exit.target).scene)
   }
 
   const arrived = () => {
@@ -128,6 +124,7 @@ export default function App() {
             : undefined
         }
         curtainClosed={phase.kind === 'end'}
+        exits={{ left: Boolean(exits.left), right: Boolean(exits.right) }}
         onExitStage={exitStage}
         leaving={leaving}
         onLeavingStage={setLeaving}

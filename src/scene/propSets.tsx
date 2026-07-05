@@ -78,6 +78,20 @@ export const PROP_SETS: Record<string, PropDef[]> = {
     { node: <Barrel />, position: [2.0, 0, 0.15], scale: 0.9, r: 0.38 },
     { node: <NpcFigure npc={NPCS.mueller} />, position: [0.5, 0, -0.9], r: 0.3, npc: true },
   ],
+  bahnhof: [
+    { node: <Crate />, position: [1.7, 0, -0.6], rotationY: 0.3, r: 0.42 },
+    { node: <Sacks />, position: [2.5, 0, -1.05], r: 0.52 },
+    { node: <Lantern />, position: [-2.8, 0, -1.1], r: 0.22 },
+    { node: <Bollard />, position: [-1.6, 0, 0.2], r: 0.2 },
+    { node: <NpcFigure npc={NPCS.schaffner} />, position: [0.85, 0, -0.9], r: 0.3, npc: true },
+  ],
+  fabrik: [
+    { node: <Gear />, position: [2.6, 0, -1.3], r: 0.6 },
+    { node: <Workbench />, position: [1.35, 0, -0.7], rotationY: -0.1, r: 0.78 },
+    { node: <Barrel />, position: [-2.6, 0, -1.0], r: 0.38 },
+    { node: <Crate />, position: [2.3, 0, 0.1], rotationY: 0.5, r: 0.42 },
+    { node: <NpcFigure npc={NPCS.brigadier} />, position: [0.3, 0, -0.95], r: 0.3, npc: true },
+  ],
 }
 
 export type Collider = { x: number; z: number; r: number }

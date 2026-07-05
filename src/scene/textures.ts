@@ -26,7 +26,7 @@ for (const [path, url] of Object.entries(files)) {
 const placeholderCache = new Map<string, string>()
 
 /** Szenen, die als Innenraum gezeichnet werden (nur für Platzhalter relevant) */
-const INTERIOR_SCENES = new Set(['werkstatt', 'wachstube', 'muehle', 'finale'])
+const INTERIOR_SCENES = new Set(['werkstatt', 'wachstube', 'muehle', 'finale', 'fabrik'])
 
 export function resolveSceneUrl(epoch: EpochId, scene: string): string {
   return (

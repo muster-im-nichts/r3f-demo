@@ -17,8 +17,10 @@ Dann http://localhost:5173 öffnen (auch am Smartphone im selben Netz nutzbar,
 ## Aufbau
 
 - `src/game/` — Story-Engine und Kampagnen, reines TypeScript ohne React/three.
-  Neue Geschichten entstehen als Daten in `src/game/campaigns/` (Format siehe
-  `types.ts`; `validateCampaign` prüft die Struktur beim Dev-Start).
+  Jede Kombination aus Epoche und Genre hat ihre eigene Kampagne (Matrix in
+  `src/game/campaigns/index.ts`). Neue Geschichten entstehen als Daten in
+  `src/game/campaigns/` (Format siehe `types.ts`; `validateCampaign` prüft
+  die Struktur beim Dev-Start).
 - `src/scene/` — die R3F-Bühne: Backdrop mit Crossfade, prozeduraler
   Pixel-Avatar, Parallax-Kamera, Textur-Lader mit Platzhalter-Fallback.
 - `src/ui/` — DOM-Overlays: Start-, Adventure- und End-Screen, Letterbox.

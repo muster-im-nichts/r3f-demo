@@ -98,4 +98,32 @@ export const NPCS: Record<string, NpcSpec> = {
     },
     scale: 0.8,
   },
+  schaffner: {
+    id: 'npc-schaffner',
+    name: 'Schaffner',
+    sprite: {
+      skin: '#e8c49a',
+      hair: '#3a3028',
+      coat: '#26456b',
+      trousers: '#1f2733',
+      accent: '#d94040', // die rote Signalfahne am Gürtel
+      hat: true,
+      skirt: false,
+      broad: false,
+    },
+  },
+  brigadier: {
+    id: 'npc-brigadier',
+    name: 'Brigadier',
+    sprite: {
+      skin: '#dba578',
+      hair: '#8a8378',
+      coat: '#5a6066',
+      trousers: '#3a4046',
+      accent: '#e8a13a', // der gelbe Schutzhelm-Rand
+      hat: true,
+      skirt: false,
+      broad: true,
+    },
+  },
 }

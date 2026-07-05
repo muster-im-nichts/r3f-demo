@@ -27,6 +27,12 @@ const NDC_LEAVING = 0.9 // Props versinken: Figur fast am Bildrand, auswärts
 const NDC_RETURN = 0.72 // Props kommen zurück: wieder klar im Bild
 const NDC_EXIT = 1.15 // Szenenwechsel: Figur ist sichtbar aus dem Bild
 const NDC_ARRIVE = 0.55 // Auto-Walk endet ~1/3 hinter der Schwelle, dann übernimmt der Spieler
+/**
+ * Gesperrte Richtung (kein Story-Ausgang): Figur stoppt hier am Bildrand.
+ * Bewusst unter NDC_LEAVING, damit an gesperrten Seiten nie die Props
+ * versinken oder ein Szenenwechsel anläuft.
+ */
+const NDC_BLOCK = 0.84
 
 const projected = new Vector3()
 
@@ -63,6 +69,7 @@ export function Avatar({
   character,
   speech,
   scene,
+  exits,
   onExitStage,
   onLeavingStage,
   autoWalk,
@@ -71,6 +78,8 @@ export function Avatar({
   character: Character
   speech?: string
   scene: string
+  /** Nur in Richtungen mit Story-Ausgang darf die Figur die Bühne verlassen */
+  exits: { left: boolean; right: boolean }
   onExitStage?: (direction: 'left' | 'right') => void
   /** Feuert, sobald die Figur den sichtbaren Bühnenrand verlässt/zurückkehrt */
   onLeavingStage?: (leaving: boolean) => void
@@ -219,8 +228,20 @@ export function Avatar({
 
     // Wo steht die Figur im Bild? (NDC-x: -1 = linker Rand, +1 = rechter)
     projected.set(pos.current.x, 1.0, pos.current.z).project(state.camera)
-    const ndcX = projected.x
-    const absNdc = Math.abs(ndcX)
+    let ndcX = projected.x
+    let absNdc = Math.abs(ndcX)
+
+    // Hier geht die Geschichte nicht weiter: ohne Ausgang in dieser Richtung
+    // endet die Bühne am Bildrand — zurück auf die Sperrkante projizieren.
+    // Auto-Walk (Story-Transit) darf immer durch.
+    const mayExit = autoWalk ? true : ndcX >= 0 ? exits.right : exits.left
+    if (!mayExit && absNdc > NDC_BLOCK) {
+      projected.x = Math.sign(ndcX) * NDC_BLOCK
+      projected.unproject(state.camera)
+      pos.current.x = projected.x
+      ndcX = Math.sign(ndcX) * NDC_BLOCK
+      absNdc = NDC_BLOCK
+    }
 
     // Ankunft in der Zielszene: kurz hinter der Schwelle stoppen (~1/3 im
     // Bild) — danach hat der Spieler sofort wieder die Kontrolle

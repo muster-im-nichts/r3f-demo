@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import { CanvasTexture, DoubleSide, MathUtils, Vector3, type Group, type Mesh } from 'three'
 import { spriteTexture, SPRITE_ASPECT } from './sprites'
 import { MOVE_KEYS, moveInput } from './moveKeys'
@@ -56,10 +55,6 @@ function getShadowTexture(): CanvasTexture {
 const HEIGHT = 1.5
 const WIDTH = HEIGHT * SPRITE_ASPECT
 
-// drei <Html transform>: px pro World-Unit = 400 / distanceFactor
-const PX_PER_UNIT = 100
-const DISTANCE_FACTOR = 400 / PX_PER_UNIT
-
 /**
  * Pixel-Sprite-Billboard: läuft per Pfeiltasten/WASD/Touch über die Bühne
  * (mit Requisiten-Kollision), folgt der Maus mit leichter Neigung und kann
@@ -67,17 +62,16 @@ const DISTANCE_FACTOR = 400 / PX_PER_UNIT
  */
 export function Avatar({
   character,
-  speech,
   scene,
   exits,
   onExitStage,
   onLeavingStage,
   autoWalk,
+  manualEntry = false,
   onArrived,
   onWalkInterrupt,
 }: {
   character: Character
-  speech?: string
   scene: string
   /** Nur in Richtungen mit Story-Ausgang darf die Figur die Bühne verlassen */
   exits: { left: boolean; right: boolean }
@@ -86,6 +80,8 @@ export function Avatar({
   onLeavingStage?: (leaving: boolean) => void
   /** Story-Transit: Figur läuft automatisch in diese Richtung zur Zielszene */
   autoWalk?: 'left' | 'right' | null
+  /** Zu-Fuß-Transit: der Spieler läuft selbst ein, Ankunft wird nur erkannt */
+  manualEntry?: boolean
   onArrived?: () => void
   /** Spieler drückt während des Auto-Walks eine Bewegungstaste */
   onWalkInterrupt?: (stage: 'out' | 'in') => void
@@ -97,9 +93,6 @@ export function Avatar({
   const viewportWidth = useThree(s => s.viewport.width)
   const viewportAspect = useThree(s => s.viewport.aspect)
   const x = MathUtils.clamp(-viewportWidth * 0.22, -1.1, -0.45)
-  // Hochformat: Blase höher und kompakter, damit sie nicht in die Textbox ragt
-  const narrow = viewportWidth < 3
-  const bubbleY = narrow ? HEIGHT + 1.1 : HEIGHT + 0.45
 
   const pivot = useRef<Group>(null)
   const group = useRef<Group>(null)
@@ -120,19 +113,6 @@ export function Avatar({
   const squeeze = stageSqueeze(viewportWidth)
   const colliders = useMemo(() => getColliders(scene, squeeze), [scene, squeeze])
 
-  // Sprechblase nach einer Weile ausblenden (länge-abhängig), dann abbauen
-  const [bubble, setBubble] = useState<'show' | 'fade' | 'off'>('show')
-  useEffect(() => {
-    if (!speech) return
-    setBubble('show')
-    const holdMs = 3000 + speech.length * 55
-    const fade = setTimeout(() => setBubble('fade'), holdMs)
-    const off = setTimeout(() => setBubble('off'), holdMs + 500)
-    return () => {
-      clearTimeout(fade)
-      clearTimeout(off)
-    }
-  }, [speech])
 
   useEffect(() => {
     if (autoWalk) {
@@ -141,6 +121,10 @@ export function Avatar({
       interruptArmed.current = false
     }
   }, [autoWalk])
+
+  useEffect(() => {
+    if (manualEntry) arrivedNotified.current = false
+  }, [manualEntry])
 
   // Tastatur → gemeinsamer Bewegungs-Zustand (Touch-Buttons schreiben ihn auch)
   useEffect(() => {
@@ -183,7 +167,7 @@ export function Avatar({
     pendingExit.current = null
     wasLeaving.current = false
     onLeavingStage?.(false)
-    if (autoWalk) transitStage.current = 'in'
+    if (autoWalk || manualEntry) transitStage.current = 'in'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene])
 
@@ -261,9 +245,11 @@ export function Avatar({
       absNdc = NDC_BLOCK
     }
 
-    // Ankunft in der Zielszene: kurz hinter der Schwelle stoppen (~1/3 im
-    // Bild) — danach hat der Spieler sofort wieder die Kontrolle
-    if (autoWalk && transitStage.current === 'in' && !arrivedNotified.current) {
+    // Ankunft in der Zielszene: beim Auto-Walk kurz hinter der Schwelle
+    // stoppen, beim Zu-Fuß-Transit einfach erkennen, wenn der Spieler
+    // selbst weit genug hereingelaufen ist
+    const awaitingArrival = autoWalk ? transitStage.current === 'in' : manualEntry
+    if (awaitingArrival && !arrivedNotified.current) {
       if (absNdc <= NDC_ARRIVE) {
         arrivedNotified.current = true
         onArrived?.()
@@ -337,48 +323,6 @@ export function Avatar({
         <planeGeometry args={[1.0, 0.5]} />
         <meshBasicMaterial map={getShadowTexture()} transparent depthWrite={false} />
       </mesh>
-      {speech && bubble !== 'off' && (
-        <Html
-          transform
-          position={[narrow ? 0 : 0.35, bubbleY, 0.05]}
-          distanceFactor={DISTANCE_FACTOR}
-          pointerEvents="none"
-          style={{ opacity: bubble === 'fade' ? 0 : 0.95, transition: 'opacity 0.45s' }}
-        >
-          <div
-            style={{
-              maxWidth: `${Math.round(MathUtils.clamp((viewportWidth - 1.2) * PX_PER_UNIT, 140, 260))}px`,
-              background: '#f5efdc',
-              color: '#2a2118',
-              border: '3px solid #2a2118',
-              borderRadius: '10px',
-              padding: narrow ? '7px 10px' : '10px 14px',
-              fontFamily: 'var(--font-text)',
-              fontSize: narrow ? '16px' : '20px',
-              lineHeight: 1.15,
-              textAlign: 'center',
-              whiteSpace: 'normal',
-              width: 'max-content',
-              position: 'relative',
-              userSelect: 'none',
-            }}
-          >
-            {speech}
-            <div
-              style={{
-                position: 'absolute',
-                left: '28px',
-                bottom: '-12px',
-                width: 0,
-                height: 0,
-                borderLeft: '8px solid transparent',
-                borderRight: '8px solid transparent',
-                borderTop: '12px solid #2a2118',
-              }}
-            />
-          </div>
-        </Html>
-      )}
     </group>
   )
 }

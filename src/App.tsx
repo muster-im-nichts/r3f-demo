@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Ending, GameSetup, NodeId } from './game/types'
 import { getCampaign } from './game/campaigns'
 import {
@@ -8,7 +8,9 @@ import {
   nodeCast,
   nodeSegments,
   resolveText,
+  type Segment,
 } from './game/engine'
+import { NPCS } from './game/npcs'
 import { sceneLabel } from './game/scenes'
 import { preloadScenes } from './scene/textures'
 import { Stage } from './scene/Stage'
@@ -21,15 +23,19 @@ import { Signposts } from './ui/Signposts'
 import { ensureAudio } from './audio/audio'
 import { startMusic } from './audio/sequencer'
 import { success, failure } from './audio/sfx'
-import { prefetchSpeech } from './audio/voice'
+import { isVoiceEnabled, prefetchSpeech, speak, voiceAvailable } from './audio/voice'
 
 type Phase =
   | { kind: 'start' }
   | { kind: 'playing'; nodeId: NodeId }
   | { kind: 'end'; nodeId: NodeId; ending: Ending }
 
-/** Story-Transit: Figur läuft gerade zur Szene des gewählten Knotens */
-type Transit = { nodeId: NodeId; direction: 'left' | 'right' }
+/**
+ * Story-Transit: Figur läuft zur Szene des gewählten Knotens. `manual` =
+ * der Spieler ist zu Fuß hinausgelaufen und betritt die neue Szene auch
+ * selbst — kein Auto-Walk, nur Ankunftserkennung.
+ */
+type Transit = { nodeId: NodeId; direction: 'left' | 'right'; manual?: boolean }
 
 export default function App() {
   const [setup, setSetup] = useState<GameSetup | null>(null)
@@ -43,13 +49,28 @@ export default function App() {
   const [instantText, setInstantText] = useState(false)
   // Dialog-Sprecher, die ihr Stichwort schon hatten und aufgetreten sind
   const [cuedCast, setCuedCast] = useState<string[]>([])
+  // Angeklickte Plauderzeilen der Anwesenden (werden ans Drehbuch angehängt)
+  const [chatter, setChatter] = useState<Segment[]>([])
+  const chatterCount = useRef(new Map<string, number>())
 
   const nodeId = phase.kind === 'start' ? null : phase.nodeId
   useEffect(() => {
     setWalkScene(null) // Story-Fortschritt holt die Bühne zur Knoten-Szene zurück
     setInstantText(false) // neuer Knoten = neuer Text, wieder mit Typewriter
-    setCuedCast([]) // Auftritte gelten pro Knoten
+    setChatter([]) // Plaudereien gehören zur Textbox des Knotens
   }, [nodeId])
+
+  // Auftritte gelten pro Szene: Wer einmal auf der Bühne steht (z.B. Meister
+  // Runge), bleibt auch beim nächsten Knoten derselben Szene — erst der
+  // Szenenwechsel räumt die Stichwort-Besetzung. (Hook vor dem StartScreen-
+  // Return, damit die Hook-Reihenfolge stabil bleibt.)
+  const currentScene =
+    setup && phase.kind !== 'start'
+      ? (walkScene ?? getNode(getCampaign(setup.epoch, setup.genre), phase.nodeId).scene)
+      : null
+  useEffect(() => {
+    setCuedCast([])
+  }, [currentScene])
 
   if (phase.kind === 'start' || !setup) {
     return (
@@ -71,8 +92,8 @@ export default function App() {
   const node = getNode(campaign, phase.nodeId)
   const scene = walkScene ?? node.scene
   const exits = phase.kind === 'playing' && !transit ? deriveExits(campaign, node) : {}
-  // Das Drehbuch des Knotens: Erzähltext + Dialogzeilen mit Sprechern
-  const segments = nodeSegments(node, setup)
+  // Das Drehbuch des Knotens: Erzähltext + Dialogzeilen + Plaudereien
+  const segments = [...nodeSegments(node, setup), ...chatter]
   // Bühne = Grundbesetzung + alle Sprecher, die ihr Stichwort schon hatten;
   // beim Durchwandern fremder Szenen (Transit) gilt deren Standard-Besetzung
   const castOnStage = walkScene
@@ -83,6 +104,22 @@ export default function App() {
   const cueSpeaker = (by?: string) => {
     if (!by || by === 'player') return
     setCuedCast(current => (current.includes(by) ? current : [...current, by]))
+  }
+
+  /** Klick auf einen Anwesenden: eine Plauderzeile, angehängt ans Drehbuch */
+  const talkTo = (npcKey: string) => {
+    if (phase.kind !== 'playing' || transit) return
+    const npc = NPCS[npcKey]
+    if (!npc?.chatter?.length) return
+    const count = chatterCount.current.get(npcKey) ?? 0
+    chatterCount.current.set(npcKey, count + 1)
+    const text = npc.chatter[count % npc.chatter.length].replaceAll(
+      '{name}',
+      setup.character.name,
+    )
+    const segment: Segment = { by: npcKey, name: npc.name, voice: npc.voice ?? 'narrator', text }
+    setChatter(current => [...current, segment])
+    if (voiceAvailable() && isVoiceEnabled()) speak(text, segment.voice)
   }
 
   /** Knoten wirklich betreten (Text/Ende zeigen) */
@@ -135,9 +172,10 @@ export default function App() {
     }
     const exit = exits[direction]
     if (!exit) return
-    // Mit den Füßen entschieden: Ausgang gehört zu einer Story-Option
+    // Mit den Füßen entschieden: Ausgang gehört zu einer Story-Option —
+    // aber der Spieler behält die Füße: Einlauf bleibt manuell
     prefetchNode(exit.target)
-    setTransit({ nodeId: exit.target, direction })
+    setTransit({ nodeId: exit.target, direction, manual: true })
     setWalkScene(getNode(campaign, exit.target).scene)
   }
 
@@ -170,17 +208,14 @@ export default function App() {
         scene={scene}
         character={setup.character}
         cast={castOnStage}
-        speech={
-          phase.kind === 'playing' && !transit && node.speech
-            ? resolveText(node.speech, setup)
-            : undefined
-        }
         curtainClosed={phase.kind === 'end'}
         exits={{ left: Boolean(exits.left), right: Boolean(exits.right) }}
         onExitStage={exitStage}
+        onTalk={talkTo}
         leaving={leaving}
         onLeavingStage={setLeaving}
-        autoWalk={transit?.direction ?? null}
+        autoWalk={transit && !transit.manual ? transit.direction : null}
+        manualEntry={Boolean(transit?.manual)}
         onArrived={arrived}
         onWalkInterrupt={interruptWalk}
       />

@@ -30,12 +30,6 @@ export const nachtzug: Campaign = {
             'Eberswalde, 1860. Zischend kommt der Nachtzug aus Berlin zum Stehen, Dampf wabert über den Bahnsteig. Dann der Aufschrei aus dem Packwagen: Die eiserne Lohnkasse der Eisenbahngesellschaft ist fort — und morgen ist Zahltag für hundert Streckenarbeiter! Du, {name}, stehst als Erster von allen am offenen Wagen.',
         },
       },
-      speech: {
-        default: 'Eine eiserne Kasse trägt niemand weit …',
-        byCharacter: {
-          lotte: 'Der Zug hielt nur zweimal. Ich kenne beide Strecken!',
-        },
-      },
       options: [
         { label: 'Den Schaffner befragen', target: 'n-schaffner' },
         { label: 'Den Bahnsteig absuchen', target: 'n-spur' },
@@ -47,9 +41,25 @@ export const nachtzug: Campaign = {
       id: 'n-schaffner',
       scene: 'bahnhof',
       text: {
-        default:
-          'Der Schaffner dreht seine Mütze in den Händen. "Bei der Ausfahrt in Bernau war die Kasse noch da, ich schwöre es! Nur der Heizer war zwischendurch hinten im Packwagen — Kohlen holen, sagte er." Er stockt. "Und eben, beim Halt … da ist ein Mann mit einer schweren Reisetasche Richtung Fischergasse davon. Gebückt lief er, wie unter Eisenlast."',
+        default: 'Der Schaffner dreht seine Mütze in den Händen.',
       },
+      dialog: [
+        {
+          by: 'schaffner',
+          line: {
+            default:
+              'Bei der Ausfahrt in Bernau war die Kasse noch da, ich schwöre es! Nur der Heizer war zwischendurch hinten im Packwagen — Kohlen holen, sagte er.',
+          },
+        },
+        { by: 'narrator', line: { default: 'Er stockt.' } },
+        {
+          by: 'schaffner',
+          line: {
+            default:
+              'Und eben, beim Halt … da ist ein Mann mit einer schweren Reisetasche Richtung Fischergasse davon. Gebückt lief er, wie unter Eisenlast.',
+          },
+        },
+      ],
       options: [
         { label: 'Dem Mann in die Gasse folgen', target: 'n-gasse' },
         { label: 'Erst die Wache verständigen', target: 'n-wache' },
@@ -63,9 +73,6 @@ export const nachtzug: Campaign = {
         default:
           'Du gehst den Bahnsteig ab, Laterne in der Hand. Da: schwarze Fußabdrücke, fein wie Ruß — Kohlenstaub, wie ihn nur einer an den Stiefeln hat, der im Tender arbeitet. Die Spur führt vom Packwagen zur Sperre. Daneben liegt ein zerknüllter Handschuh, schwarz verschmiert. Wer immer die Kasse trug, kam vom Führerstand.',
       },
-      speech: {
-        default: 'Kohlenstaub. Der Dieb fuhr auf dieser Lok mit!',
-      },
       options: [
         { label: 'Der Spur in die Stadt folgen', target: 'n-gasse' },
         { label: 'Den Fund der Wache melden', target: 'n-wache' },
@@ -77,9 +84,22 @@ export const nachtzug: Campaign = {
       cast: ['wachtmeister'],
       scene: 'wachstube',
       text: {
-        default:
-          'In der Wachstube gähnt der Wachtmeister hinter seinem Pult. "Die Eisenbahn und ihre Kassen — das ist Sache der Gesellschaft, nicht meine." Er beugt sich vor. "Aber bring mir den Dieb samt Beute, dann sperre ich ihn ein. Vorher rühre ich keinen Stiefel. Verdächtigungen hatte ich diese Woche schon genug."',
+        default: 'In der Wachstube gähnt der Wachtmeister hinter seinem Pult.',
       },
+      dialog: [
+        {
+          by: 'wachtmeister',
+          line: { default: 'Die Eisenbahn und ihre Kassen — das ist Sache der Gesellschaft, nicht meine.' },
+        },
+        { by: 'narrator', line: { default: 'Er beugt sich vor.' } },
+        {
+          by: 'wachtmeister',
+          line: {
+            default:
+              'Aber bring mir den Dieb samt Beute, dann sperre ich ihn ein. Vorher rühre ich keinen Stiefel. Verdächtigungen hatte ich diese Woche schon genug.',
+          },
+        },
+      ],
       options: [
         { label: 'Allein in die Fischergasse', target: 'n-gasse' },
         { label: 'Den Schaffner ins Verhör nehmen', target: 'n-schaffner' },
@@ -90,9 +110,25 @@ export const nachtzug: Campaign = {
       id: 'n-gasse',
       scene: 'gasse',
       text: {
-        default:
-          'In der Fischergasse hockt die Krähe auf einer Kiste und schnitzt an einem Span. "Einen gebückten Mann suchst du? Mit schwarzer Tasche und schwarzen Händen?" Sie grinst schief und streckt die Hand aus. Für eine Münze flüstert sie: "Ins alte Lagerhaus am Wasser ist er. Vor kaum einer Viertelstunde. Und er hat zweimal über die Schulter geschaut."',
+        default: 'In der Fischergasse hockt die Krähe auf einer Kiste und schnitzt an einem Span.',
       },
+      dialog: [
+        {
+          by: 'kraehe',
+          line: { default: 'Einen gebückten Mann suchst du? Mit schwarzer Tasche und schwarzen Händen?' },
+        },
+        {
+          by: 'narrator',
+          line: { default: 'Sie grinst schief und streckt die Hand aus — erst eine Münze, dann Worte.' },
+        },
+        {
+          by: 'kraehe',
+          line: {
+            default:
+              'Ins alte Lagerhaus am Wasser ist er. Vor kaum einer Viertelstunde. Und er hat zweimal über die Schulter geschaut.',
+          },
+        },
+      ],
       options: [
         { label: 'Allein zum Lagerhaus schleichen', target: 'n-lager' },
         { label: 'Den Wachtmeister als Verstärkung holen', target: 'n-verstaerkung' },
@@ -105,9 +141,22 @@ export const nachtzug: Campaign = {
       cast: ['wachtmeister'],
       scene: 'wachstube',
       text: {
-        default:
-          '"Das Lagerhaus, sagst du? Und Kohlenstaub-Spuren?" Der Wachtmeister schnallt sich den Säbel um, plötzlich hellwach. "Der Heizer also. Gut kombiniert." Er nimmt die Laterne vom Haken. "Aber im Lagerhaus gibt es zwei Tore. Wenn wir hineinpoltern, ist er durch das andere hinaus. Wie machen wir es?"',
+        default: 'Der Wachtmeister schnallt sich den Säbel um, plötzlich hellwach.',
       },
+      dialog: [
+        {
+          by: 'wachtmeister',
+          line: { default: 'Das Lagerhaus, sagst du? Und Kohlenstaub-Spuren? Der Heizer also. Gut kombiniert.' },
+        },
+        { by: 'narrator', line: { default: 'Er nimmt die Laterne vom Haken.' } },
+        {
+          by: 'wachtmeister',
+          line: {
+            default:
+              'Aber im Lagerhaus gibt es zwei Tore. Wenn wir hineinpoltern, ist er durch das andere hinaus. Wie machen wir es?',
+          },
+        },
+      ],
       options: [
         { label: 'Gemeinsam beide Tore besetzen', target: 'n-zugriff' },
         { label: 'Doch lieber allein vorschleichen', target: 'n-lager' },
@@ -122,9 +171,6 @@ export const nachtzug: Campaign = {
         default:
           'Im Lagerhaus brennt eine einzelne Kerze. Zwischen Kisten kniet der Heizer und wuchtet die Lohnkasse in ein Fass — die Hände schwarz bis zu den Ellenbogen. Noch hat er dich nicht bemerkt. Die Kasse ist schwer, das Fass fast verschlossen. Ein falscher Laut, und er ist gewarnt.',
       },
-      speech: {
-        default: 'Ganz ruhig jetzt. Kein Laut.',
-      },
       options: [
         { label: 'Ihn laut zur Rede stellen', target: 'n-ende-entwischt' },
         { label: 'Leise das Tor verkeilen, dann die Wache holen', target: 'n-zugriff' },
@@ -137,8 +183,18 @@ export const nachtzug: Campaign = {
       scene: 'finale',
       text: {
         default:
-          'Der Wachtmeister tritt durch das große Tor, du bewachst das kleine. Der Heizer fährt herum, hebt die Hände. "Ich habe nichts! Durchsucht mich doch!" Tatsächlich: Die Kasse ist nirgends zu sehen, die Fässer stehen zu Dutzenden in der Halle. Der Wachtmeister sieht dich fragend an — ohne Beute kein Beweis.',
+          'Der Wachtmeister tritt durch das große Tor, du bewachst das kleine. Der Heizer fährt herum, hebt die Hände.',
       },
+      dialog: [
+        { by: 'heizer', line: { default: 'Ich habe nichts! Durchsucht mich doch!' } },
+        {
+          by: 'narrator',
+          line: {
+            default:
+              'Tatsächlich: Die Kasse ist nirgends zu sehen, die Fässer stehen zu Dutzenden in der Halle. Der Wachtmeister sieht dich fragend an — ohne Beute kein Beweis.',
+          },
+        },
+      ],
       options: [
         { label: 'Das Fass mit den schwarzen Fingerspuren öffnen', target: 'n-ende-erfolg' },
         { label: 'Ihn einfach abführen lassen', target: 'n-ende-beweis' },

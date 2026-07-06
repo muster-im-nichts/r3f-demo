@@ -17,9 +17,6 @@ export const hochwasser: Campaign = {
         default:
           'Sturm über Eberswalde. Der Regen peitscht, und der Finowkanal steigt Handbreit um Handbreit. Am Wehr heult das Wasser — die Tore klemmen, und wenn sie nicht bald öffnen, steht bis zum Morgen die halbe Innenstadt unter Wasser. Außer dir, {name}, ist niemand wach.',
       },
-      speech: {
-        default: 'Das Wasser wartet auf niemanden.',
-      },
       options: [
         { label: 'Sofort zum Wehr laufen', target: 'h-wehr' },
         { label: 'Erst auf dem Markt Leute wecken', target: 'h-markt' },
@@ -87,9 +84,6 @@ export const hochwasser: Campaign = {
       dialog: [
         { by: 'junge', line: { default: 'Soll ich den Flaschenzug holen?!' } },
       ],
-      speech: {
-        default: 'Mit dem Kopf, nicht mit den Knochen!',
-      },
       options: [
         { label: '"Ja! Lauf, so schnell du kannst!"', target: 'h-plan' },
         { label: 'Aufgeben und die Unterstadt warnen', target: 'h-ende-flut' },

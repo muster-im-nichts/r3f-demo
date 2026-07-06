@@ -24,11 +24,16 @@ export const blaupausen: Campaign = {
       scene: 'fabrik',
       text: {
         default:
-          'Eberswalde, 1960. Im Kranwerk riecht es nach Öl und kaltem Kaffee, die Neonröhren summen. Im Zeichensaal klafft der Planschrank offen: Die Blaupausen des neuen Hafenkrans sind weg — drei Tage vor der Abnahme! Der Brigadier knallt seine Mütze auf den Tisch: "Ohne die Pläne steht hier alles still. {name}, du hast die besten Augen im Werk. Finde sie."',
+          'Eberswalde, 1960. Im Kranwerk riecht es nach Öl und kaltem Kaffee, die Neonröhren summen. Im Zeichensaal klafft der Planschrank offen: Die Blaupausen des neuen Hafenkrans sind weg — drei Tage vor der Abnahme! Der Brigadier knallt seine Mütze auf den Tisch.',
       },
-      speech: {
-        default: 'Ein Planschrank öffnet sich nicht von allein …',
-      },
+      dialog: [
+        {
+          by: 'brigadier',
+          line: {
+            default: 'Ohne die Pläne steht hier alles still. {name}, du hast die besten Augen im Werk. Finde sie.',
+          },
+        },
+      ],
       options: [
         { label: 'Die Werkbank des Neuen ansehen', target: 'b-werkbank' },
         { label: 'Den Nachtwächter befragen', target: 'b-waechter' },
@@ -42,9 +47,6 @@ export const blaupausen: Campaign = {
       text: {
         default:
           'An der Werkbank des Neuen liegt alles ordentlich — zu ordentlich. Unter dem Schraubstock: ein Bogen Durchschlagpapier, hauchdünn, wie man es zum Abpausen nimmt. Und im Papierkorb ein zerknüllter Kassenzettel vom Konsum am Markt: zwei Brausen, gestern Abend, kurz vor Ladenschluss. Wer kauft zwei Brausen, wenn er allein ist?',
-      },
-      speech: {
-        default: 'Zwei Brausen. Er hat sich mit jemandem getroffen.',
       },
       options: [
         { label: 'Im Konsum am Markt nachfragen', target: 'b-markt' },
@@ -69,9 +71,19 @@ export const blaupausen: Campaign = {
       id: 'b-meldung',
       scene: 'wachstube',
       text: {
-        default:
-          'Der Abschnittsbevollmächtigte klappt sein Notizbuch auf und wieder zu. "Verschwundene Pläne, so so. Und Verdächtige? Beweise?" Er schiebt die Brille hoch. "Bring mir etwas in die Hand, Genosse {name} — einen Namen, einen Ort, ein Blatt Papier. Vorher kann ich nur Protokoll schreiben, und davon wird kein Kran gebaut."',
+        default: 'Der Abschnittsbevollmächtigte klappt sein Notizbuch auf und wieder zu.',
       },
+      dialog: [
+        { by: 'wache', line: { default: 'Verschwundene Pläne, so so. Und Verdächtige? Beweise?' } },
+        { by: 'narrator', line: { default: 'Er schiebt die Brille hoch.' } },
+        {
+          by: 'wache',
+          line: {
+            default:
+              'Bring mir etwas in die Hand, Genosse {name} — einen Namen, einen Ort, ein Blatt Papier. Vorher kann ich nur Protokoll schreiben, und davon wird kein Kran gebaut.',
+          },
+        },
+      ],
       options: [
         { label: 'Am Markt der Kassenzettel-Spur nachgehen', target: 'b-markt' },
         { label: 'In der Fischergasse nach dem Mann suchen', target: 'b-gasse' },
@@ -82,9 +94,23 @@ export const blaupausen: Campaign = {
       id: 'b-markt',
       scene: 'marktplatz',
       text: {
-        default:
-          'Am Kiosk winkt dich Hanne heran, noch ehe du fragst. "Der Neue aus dem Kranwerk? Kommt jeden Abend, kauft zwei Brausen und trifft sich mit einem Städter in der Fischergasse. Gestern hatten sie es eilig." Sie beugt sich vor. "Der Städter trug eine Rolle unterm Arm. So lang." Sie spreizt die Arme weiter, als jeder Plan sein müsste.',
+        default: 'Am Kiosk winkt dich Hanne heran, noch ehe du fragst.',
       },
+      dialog: [
+        {
+          by: 'hanne',
+          line: {
+            default:
+              'Der Neue aus dem Kranwerk? Kommt jeden Abend, kauft zwei Brausen und trifft sich mit einem Städter in der Fischergasse. Gestern hatten sie es eilig.',
+          },
+        },
+        { by: 'narrator', line: { default: 'Sie beugt sich vor.' } },
+        { by: 'hanne', line: { default: 'Der Städter trug eine Rolle unterm Arm. So lang.' } },
+        {
+          by: 'narrator',
+          line: { default: 'Sie spreizt die Arme weiter, als jeder Plan sein müsste.' },
+        },
+      ],
       options: [
         { label: 'Sofort in die Fischergasse', target: 'b-gasse' },
         { label: 'Den Brigadier als Zeugen dazuholen', target: 'b-zeuge' },
@@ -95,9 +121,21 @@ export const blaupausen: Campaign = {
       id: 'b-gasse',
       scene: 'gasse',
       text: {
-        default:
-          'In der Fischergasse lehnt die Krähe im Torbogen, als hätte sie auf dich gewartet. "Suchst den mit der Aktentasche, was?" Für ein Päckchen Kaugummi rückt sie heraus: "Im alten Lagerhaus am Wasser hocken sie. Seit heute früh. Einer pinselt, einer paust — riechen kannst du das Ölpapier bis hier." Sie grinst. "Aber die Tür quietscht. Sag nicht, ich hätte dich nicht gewarnt."',
+        default: 'In der Fischergasse lehnt die Krähe im Torbogen, als hätte sie auf dich gewartet.',
       },
+      dialog: [
+        { by: 'kraehe', line: { default: 'Suchst den mit der Aktentasche, was?' } },
+        { by: 'narrator', line: { default: 'Für ein Päckchen Kaugummi rückt sie heraus.' } },
+        {
+          by: 'kraehe',
+          line: {
+            default:
+              'Im alten Lagerhaus am Wasser hocken sie. Seit heute früh. Einer pinselt, einer paust — riechen kannst du das Ölpapier bis hier.',
+          },
+        },
+        { by: 'narrator', line: { default: 'Sie grinst.' } },
+        { by: 'kraehe', line: { default: 'Aber die Tür quietscht. Sag nicht, ich hätte dich nicht gewarnt.' } },
+      ],
       options: [
         { label: 'Allein zum Lagerhaus schleichen', target: 'b-lager' },
         { label: 'Erst den Brigadier holen — Zeugen!', target: 'b-zeuge' },
@@ -110,8 +148,19 @@ export const blaupausen: Campaign = {
       scene: 'fabrik',
       text: {
         default:
-          'Der Brigadier hört zu, ohne dich zu unterbrechen — Durchschlagpapier, zwei Brausen, das Lagerhaus. Dann nickt er einmal, kurz und schwer. "Gut gearbeitet, {name}. Aber merk dir: Es zählt nur, was wir schwarz auf weiß zurückholen. Die Originale zuerst, dann der Mann." Er greift nach seiner Jacke. "Wie gehen wir rein?"',
+          'Der Brigadier hört zu, ohne dich zu unterbrechen — Durchschlagpapier, zwei Brausen, das Lagerhaus. Dann nickt er einmal, kurz und schwer.',
       },
+      dialog: [
+        {
+          by: 'brigadier',
+          line: {
+            default:
+              'Gut gearbeitet, {name}. Aber merk dir: Es zählt nur, was wir schwarz auf weiß zurückholen. Die Originale zuerst, dann der Mann.',
+          },
+        },
+        { by: 'narrator', line: { default: 'Er greift nach seiner Jacke.' } },
+        { by: 'brigadier', line: { default: 'Wie gehen wir rein?' } },
+      ],
       options: [
         { label: 'Gemeinsam und leise, beide Ausgänge', target: 'b-zugriff' },
         { label: 'Du gehst allein vor, er wartet draußen', target: 'b-lager' },
@@ -125,9 +174,6 @@ export const blaupausen: Campaign = {
       text: {
         default:
           'Durch den Türspalt siehst du sie: Auf zwei Böcken liegen deine Blaupausen ausgerollt, dahinter der Neue, der Bogen um Bogen auf Ölpapier abpaust. Neben ihm der Städter — und neben dem ein eiserner Ofen, in dem schon Feuer knistert. Wenn die beiden erschrecken, sind die Originale schneller im Ofen, als du "Halt" rufen kannst.',
-      },
-      speech: {
-        default: 'Der Ofen. Sie würden alles verbrennen …',
       },
       options: [
         { label: 'Hineinplatzen und sie zur Rede stellen', target: 'b-ende-zerrissen' },

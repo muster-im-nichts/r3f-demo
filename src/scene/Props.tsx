@@ -114,52 +114,48 @@ function PropGroup({
 /**
  * Sequenzer: `leaving` (klare Auswärtsbewegung über die Bühnenkante, vom
  * Avatar mit Hysterese gemeldet) startet den Abgang — kehrt der Spieler um,
- * kommen die Props zurück. Beim Szenenwechsel wird die neue Bühne sofort
- * bespielt; ist der alte Abgang noch nicht durch, läuft er erst zu Ende.
+ * kommen die Props zurück. Beim Szenenwechsel wird die neue Bühne SOFORT
+ * bespielt, während die alte noch versinkt (überlappend) — die Bühne ist
+ * nie leer, man ist immer in der einen oder schon in der nächsten Szene.
  */
+type Slot = { id: number; scene: string; mode: 'enter' | 'exit' }
+
 export function Props({ scene, leaving }: { scene: string; leaving: boolean }) {
-  const [shown, setShown] = useState(scene)
-  const [mode, setMode] = useState<'enter' | 'exit'>('enter')
-  const exited = useRef(false)
+  const [slots, setSlots] = useState<Slot[]>([{ id: 0, scene, mode: 'enter' }])
+  const nextId = useRef(1)
 
   useEffect(() => {
-    if (scene === shown) {
-      // gleiche Szene: Abgang beim Rauslaufen, Rückkehr beim Umkehren
-      if (leaving && mode === 'enter') {
-        exited.current = false
-        setMode('exit')
-      } else if (!leaving && mode === 'exit') {
-        exited.current = false
-        setMode('enter')
+    setSlots(current => {
+      const active = current[current.length - 1]
+      if (active.scene === scene) {
+        // gleiche Szene: Abgang beim Rauslaufen, Rückkehr beim Umkehren
+        const mode = leaving ? 'exit' : 'enter'
+        if (active.mode === mode) return current
+        return [...current.slice(0, -1), { ...active, mode }]
       }
-      return
-    }
-    // Szenenwechsel: alte Bühne fertig leeren, dann sofort die neue bespielen
-    if (exited.current) {
-      exited.current = false
-      setShown(scene)
-      setMode('enter')
-    } else if (mode !== 'exit') {
-      setMode('exit')
-    }
-  }, [scene, shown, leaving, mode])
+      // Szenenwechsel: alles Alte versinkt, das Neue kommt gleichzeitig hoch
+      return [
+        ...current.map(slot => ({ ...slot, mode: 'exit' as const })),
+        { id: nextId.current++, scene, mode: 'enter' as const },
+      ]
+    })
+  }, [scene, leaving])
 
-  const handleExited = () => {
-    exited.current = true
-    if (scene !== shown) {
-      exited.current = false
-      setShown(scene)
-      setMode('enter')
-    }
+  const drop = (id: number) => {
+    setSlots(current => current.filter(slot => slot.id !== id || slot.mode !== 'exit'))
   }
 
   return (
-    <PropGroup
-      key={`${shown}-${mode}`}
-      scene={shown}
-      mode={mode}
-      delay={mode === 'enter' ? 0.15 : 0}
-      onExited={mode === 'exit' ? handleExited : undefined}
-    />
+    <>
+      {slots.map(slot => (
+        <PropGroup
+          key={`${slot.id}-${slot.mode}`}
+          scene={slot.scene}
+          mode={slot.mode}
+          delay={slot.mode === 'enter' ? 0.1 : 0}
+          onExited={slot.mode === 'exit' ? () => drop(slot.id) : undefined}
+        />
+      ))}
+    </>
   )
 }

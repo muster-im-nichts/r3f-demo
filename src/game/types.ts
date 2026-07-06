@@ -43,8 +43,6 @@ export interface StoryNode {
    * Standard-Besetzung der Szene; Dialog-Sprecher treten zusätzlich auf.
    */
   cast?: string[]
-  /** Optionale Sprechblase über dem Avatar */
-  speech?: TextVariant
   /** 2–3 Optionen; fehlt genau bei Endknoten */
   options?: StoryOption[]
   /** Gesetzt genau dann, wenn options fehlt */

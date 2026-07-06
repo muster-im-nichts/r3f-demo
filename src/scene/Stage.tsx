@@ -40,13 +40,14 @@ export function Stage({
   scene,
   character,
   cast,
-  speech,
   curtainClosed,
   exits,
   onExitStage,
+  onTalk,
   leaving,
   onLeavingStage,
   autoWalk,
+  manualEntry,
   onArrived,
   onWalkInterrupt,
 }: {
@@ -55,14 +56,16 @@ export function Stage({
   character: Character
   /** Aktuelle Besetzung der Bühne (NPC-Keys); Auftritte/Abgänge animiert */
   cast: string[]
-  speech?: string
   curtainClosed: boolean
   /** Begehbare Bühnenausgänge — gesperrte Seiten stoppen die Figur am Bildrand */
   exits: { left: boolean; right: boolean }
   onExitStage?: (direction: 'left' | 'right') => void
+  /** Klick auf einen NPC: eine Plauderzeile */
+  onTalk?: (npcKey: string) => void
   leaving: boolean
   onLeavingStage?: (leaving: boolean) => void
   autoWalk?: 'left' | 'right' | null
+  manualEntry?: boolean
   onArrived?: () => void
   onWalkInterrupt?: (stage: 'out' | 'in') => void
 }) {
@@ -77,15 +80,15 @@ export function Stage({
         <CameraRig />
         <Backdrop epoch={epoch} scene={scene} />
         <Props scene={scene} leaving={leaving} />
-        <NpcStage scene={scene} cast={cast} leaving={leaving} />
+        <NpcStage scene={scene} cast={cast} onTalk={onTalk} />
         <Avatar
           character={character}
-          speech={speech}
           scene={scene}
           exits={exits}
           onExitStage={onExitStage}
           onLeavingStage={onLeavingStage}
           autoWalk={autoWalk}
+          manualEntry={manualEntry}
           onArrived={onArrived}
           onWalkInterrupt={onWalkInterrupt}
         />

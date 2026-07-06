@@ -25,9 +25,6 @@ export const funkenflug: Campaign = {
         default:
           'Eberswalde, 1860. Die Abendlok stampft aus dem Bahnhof, und ihr Schlot spuckt eine Garbe glühender Funken in den Wind. Einer davon bleibt im Schindeldach des alten Kornspeichers hängen. Erst glimmt es nur — dann leckt eine erste Flamme ins Dunkel. Der Wind steht zur Stadt, {name}. Und außer dir hat es noch niemand gesehen.',
       },
-      speech: {
-        default: 'Das Dach! Es brennt — und der Wind dreht zur Stadt!',
-      },
       options: [
         { label: 'Zum Markt rennen und Alarm schlagen', target: 'f-markt' },
         { label: 'Sofort allein mit dem Eimer löschen', target: 'f-allein' },
@@ -45,9 +42,6 @@ export const funkenflug: Campaign = {
             'Du reißt den Eimer vom Brunnenhaken und rennst, so schnell nur du rennen kannst — doch selbst dir läuft das Feuer davon. Für jeden gelöschten Funken tanzen zwei neue über die Schindeln. Die Flamme frisst sich am First entlang. Allein hältst du das keine Viertelstunde.',
         },
       },
-      speech: {
-        default: 'Ein Eimer gegen ein Dach — das wird nichts.',
-      },
       options: [
         { label: 'Zum Markt — es braucht viele Hände', target: 'f-markt' },
         { label: 'Stur weiterschöpfen', target: 'f-ende-brand' },
@@ -58,9 +52,25 @@ export const funkenflug: Campaign = {
       id: 'f-markt',
       scene: 'marktplatz',
       text: {
-        default:
-          '"Feuer! Feuer am Speicher!" Dein Ruf hallt über den Markt, Läden schlagen auf, Stiefel poltern. Der alte Müller packt dich am Ärmel: "Eimer haben wir genug — aber gegen ein Dach hilft nur Druck. In meiner Mühle steht die alte Handdruckspritze der Stadt!" Er hebt den Finger. "Nur ihr Schlauch, der ist seit Jahren brüchig."',
+        default: 'Du stürmst auf den Marktplatz, außer Atem.',
       },
+      dialog: [
+        { by: 'player', line: { default: 'Feuer! Feuer am Speicher!' } },
+        {
+          by: 'narrator',
+          line: {
+            default:
+              'Dein Ruf hallt über den Markt, Läden schlagen auf, Stiefel poltern. Der alte Müller packt dich am Ärmel.',
+          },
+        },
+        {
+          by: 'mueller',
+          line: {
+            default:
+              'Eimer haben wir genug — aber gegen ein Dach hilft nur Druck. In meiner Mühle steht die alte Handdruckspritze der Stadt! Nur ihr Schlauch, der ist seit Jahren brüchig.',
+          },
+        },
+      ],
       options: [
         { label: 'Die Spritze aus der Mühle holen', target: 'f-muehle' },
         { label: 'Erst eine Eimerkette zum Kanal stellen', target: 'f-kette' },
@@ -72,8 +82,11 @@ export const funkenflug: Campaign = {
       scene: 'kanal',
       text: {
         default:
-          'Vom Kanal bis zum Speicher steht nun Hand an Hand die Kette, Eimer fliegen von Arm zu Arm. Doch bis das Wasser vorn ankommt, ist die halbe Ladung verschwappt — und der Wind trägt die Funken höher, als je ein Eimer reicht. Vom Ende der Kette ruft der Müller: "Die Spritze, {name}! Ohne Druck verlieren wir das Dach!"',
+          'Vom Kanal bis zum Speicher steht nun Hand an Hand die Kette, Eimer fliegen von Arm zu Arm. Doch bis das Wasser vorn ankommt, ist die halbe Ladung verschwappt — und der Wind trägt die Funken höher, als je ein Eimer reicht. Vom Ende der Kette ruft der Müller.',
       },
+      dialog: [
+        { by: 'mueller', line: { default: 'Die Spritze, {name}! Ohne Druck verlieren wir das Dach!' } },
+      ],
       options: [
         { label: 'Zur Mühle — die Spritze holen', target: 'f-muehle' },
         { label: 'Weiter schöpfen und hoffen', target: 'f-ende-brand' },
@@ -85,14 +98,17 @@ export const funkenflug: Campaign = {
       scene: 'muehle',
       text: {
         default:
-          'In der Mühle, unter Mehlsäcken und Plane: die alte Handdruckspritze, Messing stumpf, aber der Kolben läuft. Nur der Lederschlauch ist rissig wie altes Brot. Der Müller wirft dir einen Topf zu: "Pech vom Dachdecker. Und dort das Segeltuch. Damit hält der Schlauch — wenn du dir die Zeit nimmst, ihn zu wickeln."',
+          'In der Mühle, unter Mehlsäcken und Plane: die alte Handdruckspritze, Messing stumpf, aber der Kolben läuft. Nur der Lederschlauch ist rissig wie altes Brot. Der Müller wirft dir einen Topf zu.',
       },
-      speech: {
-        default: 'Pech und Segeltuch … das kann halten!',
-        byCharacter: {
-          wilhelm: 'Ruhige Hände braucht das jetzt. Die habe ich.',
+      dialog: [
+        {
+          by: 'mueller',
+          line: {
+            default:
+              'Pech vom Dachdecker. Und dort das Segeltuch. Damit hält der Schlauch — wenn du dir die Zeit nimmst, ihn zu wickeln.',
+          },
         },
-      },
+      ],
       options: [
         { label: 'Den Schlauch sorgfältig flicken', target: 'f-einsatz' },
         { label: 'Keine Zeit! Sofort losfahren', target: 'f-platzt' },
@@ -119,8 +135,15 @@ export const funkenflug: Campaign = {
       scene: 'bahnhof',
       text: {
         default:
-          'Der geflickte Schlauch hält. Die Kette füllt den Kessel, die Schwengel gehen auf und nieder, und endlich springt ein harter Wasserstrahl übers Dach. Der Müller schreit gegen das Feuer an: "Wohin zuerst, {name}? Sag es — du hast es kommen sehen!" Der Wind treibt die Funkengarbe genau auf die Dächer der Nachbarhäuser zu.',
+          'Der geflickte Schlauch hält. Die Kette füllt den Kessel, die Schwengel gehen auf und nieder, und endlich springt ein harter Wasserstrahl übers Dach. Der Müller schreit gegen das Feuer an.',
       },
+      dialog: [
+        { by: 'mueller', line: { default: 'Wohin zuerst, {name}? Sag es — du hast es kommen sehen!' } },
+        {
+          by: 'narrator',
+          line: { default: 'Der Wind treibt die Funkengarbe genau auf die Dächer der Nachbarhäuser zu.' },
+        },
+      ],
       options: [
         { label: 'Zuerst die Nachbardächer nass halten', target: 'f-ende-held' },
         { label: 'Alles Wasser mitten in die Flammen', target: 'f-ende-brand' },

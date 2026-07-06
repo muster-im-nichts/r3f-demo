@@ -39,13 +39,6 @@ export const taschenuhr: Campaign = {
           },
         },
       ],
-      speech: {
-        default: 'Eine Uhr verschwindet nicht von allein …',
-        byCharacter: {
-          wilhelm: 'Meister Runges Uhr! Die kenne ich aus der Werkstatt …',
-          lotte: 'Ich kenne jede Gasse. Der Dieb kommt nicht weit.',
-        },
-      },
       options: [
         { label: 'Die alte Hanne am Marktstand befragen', target: 'zeugin' },
         { label: 'Zur Uhrmacherwerkstatt gehen', target: 'werkstatt1' },
@@ -97,9 +90,6 @@ export const taschenuhr: Campaign = {
           },
         },
       ],
-      speech: {
-        default: 'Der Junge zittert ja wie Espenlaub.',
-      },
       options: [
         { label: 'Karl laut zur Rede stellen', target: 'verdacht' },
         { label: 'Dich unauffällig umsehen', target: 'hinweis' },
@@ -145,9 +135,6 @@ export const taschenuhr: Campaign = {
       text: {
         default:
           'Während Karl zur Straße starrt, gleitet dein Blick über die Werkbank. Unter einem Lappen: ein zerknüllter Zettel. "Heute nacht. Fischergasse, altes Lagerhaus. Bring es der Krähe — oder dein Meister erfährt von deinen Schulden." Karl hat die Uhr nicht gestohlen. Er wird erpresst, sie zu übergeben.',
-      },
-      speech: {
-        default: 'Die Krähe … das klingt nicht nach feiner Gesellschaft.',
       },
       options: [
         { label: 'Mit dem Zettel zur Wache laufen', target: 'wache2' },
@@ -234,9 +221,6 @@ export const taschenuhr: Campaign = {
         { by: 'narrator', line: { default: 'Er wiegt einen Knüppel in der Hand.' } },
         { by: 'kraehe', line: { default: 'Und was machen wir jetzt mit dir?' } },
       ],
-      speech: {
-        default: 'Ruhig bleiben. Ganz ruhig bleiben …',
-      },
       options: [
         { label: '"Karl schickt mich. Ich bin der neue Bote."', target: 'coup' },
         { label: 'Herumfahren und zur Tür rennen', target: 'ende-entkommen' },
@@ -277,9 +261,6 @@ export const taschenuhr: Campaign = {
       text: {
         default:
           'Mitternacht. Ihr kauert hinter den Fässern am Lagerhaus, die Wache mit gelöschter Laterne neben dir. Schritte: Karl kommt mit gesenktem Kopf, das Bündel in der Hand. Aus dem Dunkel löst sich die Krähe. Die Übergabe beginnt — dein Herz schlägt bis zum Hals.',
-      },
-      speech: {
-        default: 'Noch nicht … noch nicht … jetzt gleich!',
       },
       options: [
         { label: 'Das Signal geben, wenn die Uhr den Besitzer wechselt', target: 'ende-erfolg' },

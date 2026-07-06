@@ -42,8 +42,10 @@ cast: ['wache', 'karl'],   // optional: Grundbesetzung statt Szenen-Standard
   Sprecher die Bühne — Auftritt auf Stichwort. `by: 'player'` spricht die
   eigene Figur, `by: 'narrator'` erzählt weiter.
 - Ohne `cast` gilt die Standard-Besetzung der Szene (`SCENE_DEFAULT_CAST` in
-  `npcs.ts`). Referenz-Kampagnen für das Format: `taschenuhr` und
-  `heldengeschichte` (1760); die übrigen nutzen bislang Erzähltext + `cast`.
+  `npcs.ts`); die Stichwort-Besetzung bleibt für die Dauer der Szene bestehen.
+- Alle sechs Kampagnen sind im Drehbuch-Format geschrieben.
+- Anwesende NPCs sind anklickbar und geben eine Plauderzeile (`chatter` in
+  `npcs.ts`), die ans Drehbuch der Textbox angehängt und vorgelesen wird.
 - `src/scene/` — die R3F-Bühne: Backdrop mit Crossfade, prozeduraler
   Pixel-Avatar, Parallax-Kamera, Textur-Lader mit Platzhalter-Fallback.
 - `src/ui/` — DOM-Overlays: Start-, Adventure- und End-Screen, Letterbox.

@@ -11,11 +11,17 @@ export interface NpcSpec {
   scale?: number
   /** Semantischer Stimm-Key aus src/audio/voices.json */
   voice?: string
+  /** Plauderzeilen beim Anklicken (rotieren; {name} wird ersetzt) */
+  chatter?: string[]
 }
 
 export const NPCS: Record<string, NpcSpec> = {
   hanne: {
     id: 'npc-hanne',
+    chatter: [
+      'Frag ruhig, Kind. Ich sehe alles hier auf dem Markt.',
+      'Kauf was oder frag was — aber steh nicht im Weg, {name}.',
+    ],
     voice: 'old-woman',
     name: 'Hanne',
     sprite: {
@@ -31,6 +37,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   karl: {
     id: 'npc-karl',
+    chatter: [
+      'Ich … ich hab wirklich nichts getan.',
+      'Der Meister ist streng, aber gerecht.',
+    ],
     voice: 'young-man',
     name: 'Karl',
     sprite: {
@@ -47,6 +57,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   wache: {
     id: 'npc-wache',
+    chatter: [
+      'Ordnung muss sein.',
+      'Keine Beweise, kein Einsatz. So ist die Vorschrift.',
+    ],
     voice: 'gruff-man',
     name: 'Wache',
     sprite: {
@@ -62,6 +76,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   kraehe: {
     id: 'npc-kraehe',
+    chatter: [
+      'Krächz. Was willst du?',
+      'Informationen kosten. Immer.',
+    ],
     voice: 'gruff-man',
     name: 'die Krähe',
     sprite: {
@@ -77,6 +95,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   mueller: {
     id: 'npc-mueller',
+    chatter: [
+      'Das Mehl schläft nicht, sagt man bei uns.',
+      'Ein kluger Kopf spart zwei starke Arme.',
+    ],
     voice: 'old-man',
     name: 'Müller',
     sprite: {
@@ -92,6 +114,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   junge: {
     id: 'npc-junge',
+    chatter: [
+      'Ich bin schneller am Wehr als du!',
+      'Der Müller sagt, ich darf noch nicht ans große Rad.',
+    ],
     voice: 'child',
     name: 'Müllerjunge',
     sprite: {
@@ -108,6 +134,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   schaffner: {
     id: 'npc-schaffner',
+    chatter: [
+      'Der Zug hatte heute drei Minuten Verspätung. Drei!',
+      'Eingestiegen wird erst, wenn ICH pfeife.',
+    ],
     voice: 'narrator',
     name: 'Schaffner',
     sprite: {
@@ -123,6 +153,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   brigadier: {
     id: 'npc-brigadier',
+    chatter: [
+      'Im Werk gilt: erst denken, dann heben.',
+      'Der neue Kran wird der beste, den Eberswalde je gebaut hat.',
+    ],
     voice: 'gruff-man',
     name: 'Brigadier',
     sprite: {
@@ -138,6 +172,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   wachtmeister: {
     id: 'npc-wachtmeister',
+    chatter: [
+      'Melde Er sich, wenn Er etwas Handfestes hat.',
+      'Ruhige Nacht heute. Zu ruhig.',
+    ],
     voice: 'old-man',
     name: 'Wachtmeister',
     sprite: {
@@ -153,6 +191,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   heizer: {
     id: 'npc-heizer',
+    chatter: [
+      'Was starrst du so? Ruß gehört zum Handwerk.',
+      'Auf der Lok ist es heißer als in der Hölle.',
+    ],
     voice: 'gruff-man',
     name: 'Heizer',
     sprite: {
@@ -168,6 +210,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   neuling: {
     id: 'npc-neuling',
+    chatter: [
+      'Ich will hier nur meine Arbeit machen.',
+      'Man redet über mich, ich weiß.',
+    ],
     voice: 'young-man',
     name: 'der Neue',
     sprite: {
@@ -183,6 +229,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   staedter: {
     id: 'npc-staedter',
+    chatter: [
+      'Ich bin geschäftlich hier. Rein geschäftlich.',
+      'Hübsches Städtchen. Sehr … übersichtlich.',
+    ],
     voice: 'narrator',
     name: 'der Städter',
     sprite: {
@@ -198,6 +248,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   schiffer: {
     id: 'npc-schiffer',
+    chatter: [
+      'Vierzig Jahre auf dem Kanal — aber so ein Eis? Selten.',
+      'Der Kahn hält. Die Frage ist, wie lange.',
+    ],
     voice: 'old-man',
     name: 'Schiffer',
     sprite: {
@@ -213,6 +267,10 @@ export const NPCS: Record<string, NpcSpec> = {
   },
   runge: {
     id: 'npc-runge',
+    chatter: [
+      'Vierzig Jahre Arbeit stecken in dieser Uhr.',
+      'Karl ist ein guter Junge, hörst du? Ein guter Junge.',
+    ],
     voice: 'old-man',
     name: 'Meister Runge',
     sprite: {

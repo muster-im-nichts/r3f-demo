@@ -11,10 +11,11 @@ const worldPos = new Vector3()
 
 /**
  * Gesprächspartner: Pixel-Figur mit Namensschild, atmet leicht und dreht sich
- * (Papiertheater-Flip) immer zur Hauptfigur. Wird über propSets.tsx in die
- * Szenen gestellt und macht dadurch die Falltür-Animation mit.
+ * (Papiertheater-Flip) zur Hauptfigur — oder in die per `facing` erzwungene
+ * Richtung (z.B. Laufrichtung beim Auftritt). Platziert wird sie vom
+ * NpcStage-Choreografen.
  */
-export function NpcFigure({ npc }: { npc: NpcSpec }) {
+export function NpcFigure({ npc, facing }: { npc: NpcSpec; facing?: 1 | -1 | null }) {
   const mesh = useRef<Mesh>(null)
   const flip = useRef<Group>(null)
   const texture = spriteTexture(npc)
@@ -31,8 +32,8 @@ export function NpcFigure({ npc }: { npc: NpcSpec }) {
     mesh.current.position.y = (height / 2) * (1 + breathe)
 
     flip.current.getWorldPosition(worldPos)
-    const facing = avatarPos.x >= worldPos.x ? 1 : -1
-    flip.current.scale.x = MathUtils.damp(flip.current.scale.x, facing, 6, delta)
+    const dir = facing ?? (avatarPos.x >= worldPos.x ? 1 : -1)
+    flip.current.scale.x = MathUtils.damp(flip.current.scale.x, dir, 6, delta)
   })
 
   return (

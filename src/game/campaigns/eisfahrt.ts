@@ -20,6 +20,7 @@ export const eisfahrt: Campaign = {
   nodes: {
     'e-intro': {
       id: 'e-intro',
+      cast: ['schiffer'],
       scene: 'kanal',
       text: {
         default:
@@ -37,6 +38,7 @@ export const eisfahrt: Campaign = {
 
     'e-hacken': {
       id: 'e-hacken',
+      cast: ['schiffer'],
       scene: 'kanal',
       text: {
         default:
@@ -111,6 +113,7 @@ export const eisfahrt: Campaign = {
 
     'e-umladen': {
       id: 'e-umladen',
+      cast: ['schiffer'],
       scene: 'kanal',
       text: {
         default:
@@ -124,6 +127,7 @@ export const eisfahrt: Campaign = {
 
     'e-ende-held': {
       id: 'e-ende-held',
+      cast: ['schiffer', 'brigadier'],
       scene: 'kanal',
       text: {
         default:

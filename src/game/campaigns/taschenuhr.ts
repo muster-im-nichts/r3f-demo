@@ -1,9 +1,13 @@
 import type { Campaign } from '../types'
 
 /**
- * Krimi: Die goldene Taschenuhr des Uhrmachermeisters Runge — heute ein
+ * Krimi 1760: Die goldene Taschenuhr des Uhrmachermeisters Runge — heute ein
  * Museumsobjekt — wurde aus der Ratsvitrine gestohlen. Drei Spuren, die sich
  * kreuzen; ein Erfolgs-Ende, zwei Arten zu scheitern.
+ *
+ * Referenz-Kampagne für das Drehbuch-Format: Erzähltext (`text`) plus
+ * `dialog`-Zeilen mit Sprechern — Sprecher betreten die Bühne auf ihr
+ * Stichwort, `cast` setzt die Grundbesetzung eines Knotens.
  *
  * Struktur (Runden ≈ Tiefe):
  *   intro → { zeugin, werkstatt1, wache1 }
@@ -24,16 +28,17 @@ export const taschenuhr: Campaign = {
       scene: 'marktplatz',
       text: {
         default:
-          'Eberswalde, am Abend. Ein Schrei vom Rathaus: Die goldene Taschenuhr des Uhrmachermeisters Runge ist aus der Vitrine verschwunden! Auf dem Marktplatz drängen sich die Leute. Du, {name}, stehst mittendrin — und irgendwer hier weiß mehr, als er sagt.',
-        byEpoch: {
-          '1760':
-            'Eberswalde, anno 1760. Im Kerzenschein des Rathauses gähnt eine leere Vitrine: Die goldene Taschenuhr des Uhrmachermeisters Runge ist fort! Auf dem Markt flackern die Fackeln, die Leute tuscheln. Du, {name}, stehst mittendrin — und irgendwer hier weiß mehr, als er sagt.',
-          '1860':
-            'Eberswalde, 1860. Unter den neuen Gaslaternen läuft die Nachricht wie ein Feuer den Markt entlang: Die goldene Taschenuhr des Meisters Runge ist aus der Vitrine des Rathauses gestohlen! Du, {name}, stehst mittendrin — und irgendwer hier weiß mehr, als er sagt.',
-          '1960':
-            'Eberswalde, 1960. Vor dem Rathaus flackert eine müde Neonröhre, drinnen klafft eine leere Vitrine: Die goldene Taschenuhr des alten Runge — verschwunden! Auf dem Markt stehen die Leute in Grüppchen. Du, {name}, stehst mittendrin — und irgendwer hier weiß mehr, als er sagt.',
-        },
+          'Eberswalde, anno 1760. Im Kerzenschein des Rathauses gähnt eine leere Vitrine: Die goldene Taschenuhr des Uhrmachermeisters Runge ist fort! Auf dem Markt flackern die Fackeln, die Leute tuscheln. Du, {name}, stehst mittendrin — und irgendwer hier weiß mehr, als er sagt.',
       },
+      dialog: [
+        {
+          by: 'runge',
+          line: {
+            default:
+              'Meine Uhr! Vierzig Jahre habe ich sie gehütet, und nun ist sie fort! Hilf mir, {name} — du hast Augen im Kopf, ich habe nur noch Tränen darin.',
+          },
+        },
+      ],
       speech: {
         default: 'Eine Uhr verschwindet nicht von allein …',
         byCharacter: {
@@ -52,9 +57,21 @@ export const taschenuhr: Campaign = {
       id: 'zeugin',
       scene: 'marktplatz',
       text: {
-        default:
-          'Die alte Hanne beugt sich über ihre Körbe und senkt die Stimme: "Kurz vor dem Geschrei huschte einer am Brunnen vorbei. Gesicht hab ich keins gesehen — aber ein grünes Halstuch, das hatte er. Lief Richtung Fischergasse." Ein grünes Halstuch … das kommt dir bekannt vor.',
+        default: 'Die alte Hanne beugt sich über ihre Körbe und senkt die Stimme.',
       },
+      dialog: [
+        {
+          by: 'hanne',
+          line: {
+            default:
+              'Kurz vor dem Geschrei huschte einer am Brunnen vorbei. Gesicht hab ich keins gesehen — aber ein grünes Halstuch, das hatte er. Lief Richtung Fischergasse.',
+          },
+        },
+        {
+          by: 'narrator',
+          line: { default: 'Ein grünes Halstuch … das kommt dir bekannt vor.' },
+        },
+      ],
       options: [
         { label: 'Sofort in die Fischergasse folgen', target: 'gasse1' },
         { label: 'Ein grünes Tuch trägt doch der Uhrmacherlehrling!', target: 'werkstatt1' },
@@ -72,6 +89,14 @@ export const taschenuhr: Campaign = {
             'Deine eigene Werkstatt — und doch stimmt hier etwas nicht. Der Lehrjunge Karl weicht deinem Blick aus. Am Haken neben der Tür: sein grünes Halstuch. Und auf deiner Werkbank Kratzspuren, die gestern noch nicht da waren. Hier wurde hastig etwas aufgebrochen.',
         },
       },
+      dialog: [
+        {
+          by: 'karl',
+          line: {
+            default: 'Ich … ich hab nichts gesehen. Wirklich nicht. Warum schaut ihr mich alle so an?',
+          },
+        },
+      ],
       speech: {
         default: 'Der Junge zittert ja wie Espenlaub.',
       },
@@ -85,9 +110,29 @@ export const taschenuhr: Campaign = {
       id: 'verdacht',
       scene: 'werkstatt',
       text: {
-        default:
-          '"DU warst das, Karl!" Der Junge fährt zusammen, Tränen in den Augen: "Ich hab sie nicht gestohlen! Ich schwöre!" Meister Runge poltert herein, stellt sich schützend vor seinen Lehrling und deutet zur Tür. Während ihr streitet, verrinnt kostbare Zeit — und wer auch immer die Uhr hat, gewinnt Vorsprung.',
+        default: 'Du baust dich vor dem Lehrjungen auf, und deine Stimme hallt durch die Werkstatt.',
       },
+      dialog: [
+        { by: 'player', line: { default: 'DU warst das, Karl! Das Halstuch, die Kratzspuren — gib es zu!' } },
+        {
+          by: 'narrator',
+          line: { default: 'Der Junge fährt zusammen, Tränen in den Augen.' },
+        },
+        { by: 'karl', line: { default: 'Ich hab sie nicht gestohlen! Ich schwöre!' } },
+        {
+          by: 'runge',
+          line: {
+            default: 'Was geht hier vor?! Wer meinen Lehrjungen beschuldigt, beschuldigt mich. Hinaus!',
+          },
+        },
+        {
+          by: 'narrator',
+          line: {
+            default:
+              'Während ihr streitet, verrinnt kostbare Zeit — und wer auch immer die Uhr hat, gewinnt Vorsprung.',
+          },
+        },
+      ],
       options: [
         { label: 'Karl trotzdem zur Wache schleppen', target: 'ende-blamiert' },
         { label: 'Dich entschuldigen und die Fischergasse absuchen', target: 'gasse1' },
@@ -115,16 +160,17 @@ export const taschenuhr: Campaign = {
       scene: 'wachstube',
       text: {
         default:
-          'In der Wachstube brennt Licht. Der Wachhabende hört dir zu, verschränkt die Arme und schüttelt den Kopf: "Eine verschwundene Uhr, und weiter? Kein Täter, keine Spur, kein Beweis. Bring mir etwas Handfestes, dann rücken wir aus."',
-        byEpoch: {
-          '1760':
-            'In der Wachstube brennt eine Talgkerze. Der Stadtwächter mustert dich unter seinem Dreispitz hervor: "Eine verschwundene Uhr, und weiter? Kein Täter, keine Spur, kein Beweis. Bring Er mir etwas Handfestes, dann rücken wir aus."',
-          '1860':
-            'In der Wachstube zischt eine Gaslampe. Der Gendarm zwirbelt seinen Schnurrbart: "Eine verschwundene Uhr, und weiter? Kein Täter, keine Spur, kein Beweis. Bringen Sie mir etwas Handfestes, dann rücken wir aus."',
-          '1960':
-            'In der Wachstube surrt eine Schreibmaschine. Der Volkspolizist blättert unbeeindruckt in einem Formular: "Eine verschwundene Uhr, und weiter? Kein Täter, keine Spur, kein Beweis. Bringen Sie mir was Handfestes, Genosse — dann fahren wir raus."',
-        },
+          'In der Wachstube brennt eine Talgkerze. Der Stadtwächter mustert dich unter seinem Dreispitz hervor.',
       },
+      dialog: [
+        {
+          by: 'wache',
+          line: {
+            default:
+              'Eine verschwundene Uhr, und weiter? Kein Täter, keine Spur, kein Beweis. Bring Er mir etwas Handfestes, dann rücken wir aus.',
+          },
+        },
+      ],
       options: [
         { label: 'Die Uhrmacherwerkstatt durchsuchen', target: 'werkstatt1' },
         { label: 'Auf dem Markt nach Zeugen fragen', target: 'zeugin' },
@@ -136,16 +182,16 @@ export const taschenuhr: Campaign = {
       scene: 'gasse',
       text: {
         default:
-          'Die Fischergasse liegt dunkel und feucht. Am alten Lagerhaus lehnt eine hagere Gestalt mit hochgeschlagenem Kragen — "die Krähe" nennen sie ihn am Hafen. Du drückst dich in einen Torbogen und hörst ihn krächzen: "Heute nacht die Übergabe. Der Junge bringt das Ding — und dann ist es fort aus der Stadt."',
-        byEpoch: {
-          '1760':
-            'Die Fischergasse liegt stockdunkel, nur eine Öllampe schaukelt im Wind. Am alten Lagerhaus lehnt eine hagere Gestalt — "die Krähe" nennen sie ihn am Kanal. Du drückst dich in einen Torbogen und hörst ihn krächzen: "Heute nacht die Übergabe. Der Junge bringt das Ding — und dann ist es fort aus der Stadt."',
-          '1860':
-            'In der Fischergasse zischt eine einsame Gaslaterne. Am alten Lagerhaus lehnt eine hagere Gestalt — "die Krähe" nennen sie ihn am Güterbahnhof. Du drückst dich in einen Torbogen und hörst ihn krächzen: "Heute nacht die Übergabe. Der Junge bringt das Ding — und mit dem Frühzug ist es fort."',
-          '1960':
-            'In der Fischergasse flackert eine kaputte Neonreklame. Am alten Lagerhaus lehnt eine hagere Gestalt im Regenmantel — "die Krähe" nennen sie ihn am Bahnhof. Du drückst dich in einen Hauseingang und hörst ihn krächzen: "Heute nacht die Übergabe. Der Junge bringt das Ding — und dann geht es über die Grenze."',
-        },
+          'Die Fischergasse liegt stockdunkel, nur eine Öllampe schaukelt im Wind. Am alten Lagerhaus lehnt eine hagere Gestalt — "die Krähe" nennen sie ihn am Kanal. Du drückst dich in einen Torbogen und hörst ihn krächzen.',
       },
+      dialog: [
+        {
+          by: 'kraehe',
+          line: {
+            default: 'Heute nacht die Übergabe. Der Junge bringt das Ding — und dann ist es fort aus der Stadt.',
+          },
+        },
+      ],
       options: [
         { label: 'Sofort aus dem Schatten springen', target: 'ende-entkommen' },
         { label: 'Leise die Wache holen', target: 'wache2' },
@@ -157,17 +203,19 @@ export const taschenuhr: Campaign = {
       id: 'wache2',
       scene: 'wachstube',
       text: {
-        default:
-          'Diesmal hört der Wachhabende genau hin, und sein Blick wird scharf. "Die Krähe also. Auf den warten wir schon lange." Er greift nach Laterne und Säbel. "Wir stellen ihm eine Falle am Lagerhaus. Aber nur, wenn alle ruhig bleiben — ein falscher Schritt, und er ist über alle Berge."',
-        byEpoch: {
-          '1760':
-            'Diesmal hört der Stadtwächter genau hin, und sein Blick wird scharf. "Die Krähe also. Auf den warten wir seit dem Sommer." Er greift nach Hellebarde und Laterne. "Wir stellen ihm eine Falle am Lagerhaus. Aber nur, wenn Er ruhig bleibt — ein falscher Schritt, und der Vogel ist über alle Berge."',
-          '1860':
-            'Diesmal hört der Gendarm genau hin, und sein Blick wird scharf. "Die Krähe also. Der steht seit Monaten in meinen Akten." Er schnallt den Säbel um. "Wir stellen ihm eine Falle am Lagerhaus. Aber nur, wenn Sie ruhig bleiben — ein falscher Schritt, und der Vogel ist über alle Berge."',
-          '1960':
-            'Diesmal hört der Volkspolizist genau hin, und sein Blick wird scharf. "Die Krähe also. Den Namen kennen wir." Er greift nach Mantel und Taschenlampe. "Wir stellen ihm eine Falle am Lagerhaus. Aber nur, wenn Sie ruhig bleiben — ein falscher Schritt, und der Vogel ist über alle Berge."',
-        },
+        default: 'Diesmal hört der Stadtwächter genau hin, und sein Blick wird scharf.',
       },
+      dialog: [
+        { by: 'wache', line: { default: 'Die Krähe also. Auf den warten wir seit dem Sommer.' } },
+        { by: 'narrator', line: { default: 'Er greift nach Hellebarde und Laterne.' } },
+        {
+          by: 'wache',
+          line: {
+            default:
+              'Wir stellen ihm eine Falle am Lagerhaus. Aber nur, wenn Er ruhig bleibt — ein falscher Schritt, und der Vogel ist über alle Berge.',
+          },
+        },
+      ],
       options: [
         { label: 'Gemeinsam die Falle stellen', target: 'uebergabe' },
         { label: 'Doch allein vorpreschen, bevor die Wache da ist', target: 'falle' },
@@ -179,8 +227,13 @@ export const taschenuhr: Campaign = {
       scene: 'finale',
       text: {
         default:
-          'Mitternacht am Lagerhaus. Kaum bist du durch das Tor, fällt es hinter dir ins Schloss. Die Krähe tritt aus dem Dunkel, zwei Schatten neben ihm. "Sieh an. Kein Botenjunge." Er wiegt einen Knüppel in der Hand. "Und was machen wir jetzt mit dir?"',
+          'Mitternacht am Lagerhaus. Kaum bist du durch das Tor, fällt es hinter dir ins Schloss. Die Krähe tritt aus dem Dunkel, zwei Schatten neben ihm.',
       },
+      dialog: [
+        { by: 'kraehe', line: { default: 'Sieh an. Kein Botenjunge.' } },
+        { by: 'narrator', line: { default: 'Er wiegt einen Knüppel in der Hand.' } },
+        { by: 'kraehe', line: { default: 'Und was machen wir jetzt mit dir?' } },
+      ],
       speech: {
         default: 'Ruhig bleiben. Ganz ruhig bleiben …',
       },
@@ -194,9 +247,23 @@ export const taschenuhr: Campaign = {
       id: 'coup',
       scene: 'finale',
       text: {
-        default:
-          'Die Krähe mustert dich lange. Dann ein heiseres Lachen: "Der Junge hat also doch Verstand — schickt jemanden mit Nerven." Er zieht ein Bündel aus dem Mantel und drückt es dir in die Hand. Durch das Tuch fühlst du kühles Gold: die Taschenuhr! "Bring sie zum Kahn am Kanal. Und kein Wort."',
+        default: 'Die Krähe mustert dich lange. Dann ein heiseres Lachen.',
       },
+      dialog: [
+        { by: 'player', line: { default: 'Karl schickt mich. Ich bin der neue Bote.' } },
+        {
+          by: 'kraehe',
+          line: { default: 'Der Junge hat also doch Verstand — schickt jemanden mit Nerven.' },
+        },
+        {
+          by: 'narrator',
+          line: {
+            default:
+              'Er zieht ein Bündel aus dem Mantel und drückt es dir in die Hand. Durch das Tuch fühlst du kühles Gold: die Taschenuhr!',
+          },
+        },
+        { by: 'kraehe', line: { default: 'Bring sie zum Kahn am Kanal. Und kein Wort.' } },
+      ],
       options: [
         { label: 'Nicken, hinausgehen — und zur Wache rennen', target: 'ende-erfolg' },
         { label: 'Die Krähe jetzt auch noch festhalten', target: 'ende-entkommen' },
@@ -206,6 +273,7 @@ export const taschenuhr: Campaign = {
     uebergabe: {
       id: 'uebergabe',
       scene: 'finale',
+      cast: ['wache', 'karl', 'kraehe'],
       text: {
         default:
           'Mitternacht. Ihr kauert hinter den Fässern am Lagerhaus, die Wache mit gelöschter Laterne neben dir. Schritte: Karl kommt mit gesenktem Kopf, das Bündel in der Hand. Aus dem Dunkel löst sich die Krähe. Die Übergabe beginnt — dein Herz schlägt bis zum Hals.',
@@ -222,6 +290,7 @@ export const taschenuhr: Campaign = {
     'ende-erfolg': {
       id: 'ende-erfolg',
       scene: 'finale',
+      cast: ['wache', 'kraehe', 'runge'],
       text: {
         default:
           'Zugriff! Die Wache packt die Krähe am Kragen, das Bündel wechselt ein letztes Mal den Besitzer — zurück in ehrliche Hände. Meister Runge drückt die Taschenuhr an sich, und Karl ist von aller Schuld befreit: Er wurde erpresst und hat es als Erster gestanden. Auf dem Marktplatz erzählt man sich noch Jahre später, wie {name} in einer einzigen Nacht den Fall der goldenen Taschenuhr gelöst hat.',

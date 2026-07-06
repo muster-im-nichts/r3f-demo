@@ -101,6 +101,7 @@ export const funkenflug: Campaign = {
 
     'f-platzt': {
       id: 'f-platzt',
+      cast: ['mueller'],
       scene: 'bahnhof',
       text: {
         default:
@@ -114,6 +115,7 @@ export const funkenflug: Campaign = {
 
     'f-einsatz': {
       id: 'f-einsatz',
+      cast: ['mueller'],
       scene: 'bahnhof',
       text: {
         default:
@@ -127,6 +129,7 @@ export const funkenflug: Campaign = {
 
     'f-ende-held': {
       id: 'f-ende-held',
+      cast: ['mueller'],
       scene: 'bahnhof',
       text: {
         default:

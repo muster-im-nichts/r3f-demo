@@ -136,4 +136,111 @@ export const NPCS: Record<string, NpcSpec> = {
       broad: true,
     },
   },
+  wachtmeister: {
+    id: 'npc-wachtmeister',
+    voice: 'old-man',
+    name: 'Wachtmeister',
+    sprite: {
+      skin: '#e0b18c',
+      hair: '#b0a898',
+      coat: '#3a4a2e',
+      trousers: '#26303a',
+      accent: '#c9a441',
+      hat: true,
+      skirt: false,
+      broad: true,
+    },
+  },
+  heizer: {
+    id: 'npc-heizer',
+    voice: 'gruff-man',
+    name: 'Heizer',
+    sprite: {
+      skin: '#c9a07a',
+      hair: '#1f1a16',
+      coat: '#3a3430', // rußgeschwärzte Jacke
+      trousers: '#2a2622',
+      accent: '#8a2f2a',
+      hat: false,
+      skirt: false,
+      broad: true,
+    },
+  },
+  neuling: {
+    id: 'npc-neuling',
+    voice: 'young-man',
+    name: 'der Neue',
+    sprite: {
+      skin: '#ecc9a0',
+      hair: '#4a3626',
+      coat: '#6b7a8a', // adretter Werkskittel
+      trousers: '#3a4046',
+      accent: '#d9d0c0',
+      hat: false,
+      skirt: false,
+      broad: false,
+    },
+  },
+  staedter: {
+    id: 'npc-staedter',
+    voice: 'narrator',
+    name: 'der Städter',
+    sprite: {
+      skin: '#e8c49a',
+      hair: '#2e2a26',
+      coat: '#26262e', // langer dunkler Mantel
+      trousers: '#1f1f26',
+      accent: '#5a5a6b',
+      hat: true,
+      skirt: false,
+      broad: false,
+    },
+  },
+  schiffer: {
+    id: 'npc-schiffer',
+    voice: 'old-man',
+    name: 'Schiffer',
+    sprite: {
+      skin: '#d9a887',
+      hair: '#d0c8b8',
+      coat: '#2e4a5a', // Öljacke
+      trousers: '#3a3430',
+      accent: '#c9b089',
+      hat: true,
+      skirt: false,
+      broad: true,
+    },
+  },
+  runge: {
+    id: 'npc-runge',
+    voice: 'old-man',
+    name: 'Meister Runge',
+    sprite: {
+      skin: '#e8c49a',
+      hair: '#c8c0b0',
+      coat: '#4a3a5a', // feiner Meistermantel
+      trousers: '#2e2a3a',
+      accent: '#d9a441', // die Uhrkette!
+      hat: false,
+      skirt: false,
+      broad: false,
+    },
+  },
+}
+
+/**
+ * Standard-Besetzung: wer ohne eigenes cast-Feld in der Szene steht.
+ * Kampagnen überschreiben das pro Knoten mit `cast`, Dialog-Sprecher
+ * treten automatisch zusätzlich auf.
+ */
+export const SCENE_DEFAULT_CAST: Record<string, string[]> = {
+  marktplatz: ['hanne'],
+  werkstatt: ['karl'],
+  wachstube: ['wache'],
+  gasse: ['kraehe'],
+  finale: ['kraehe'],
+  kanal: ['junge'],
+  muehle: ['mueller'],
+  bahnhof: ['schaffner'],
+  fabrik: ['brigadier'],
 }

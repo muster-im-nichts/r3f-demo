@@ -74,6 +74,7 @@ export const nachtzug: Campaign = {
 
     'n-wache': {
       id: 'n-wache',
+      cast: ['wachtmeister'],
       scene: 'wachstube',
       text: {
         default:
@@ -101,6 +102,7 @@ export const nachtzug: Campaign = {
 
     'n-verstaerkung': {
       id: 'n-verstaerkung',
+      cast: ['wachtmeister'],
       scene: 'wachstube',
       text: {
         default:
@@ -114,6 +116,7 @@ export const nachtzug: Campaign = {
 
     'n-lager': {
       id: 'n-lager',
+      cast: ['heizer'],
       scene: 'finale',
       text: {
         default:
@@ -130,6 +133,7 @@ export const nachtzug: Campaign = {
 
     'n-zugriff': {
       id: 'n-zugriff',
+      cast: ['wachtmeister', 'heizer'],
       scene: 'finale',
       text: {
         default:
@@ -143,6 +147,7 @@ export const nachtzug: Campaign = {
 
     'n-ende-erfolg': {
       id: 'n-ende-erfolg',
+      cast: ['wachtmeister', 'heizer'],
       scene: 'finale',
       text: {
         default:

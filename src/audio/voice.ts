@@ -46,6 +46,8 @@ export function setVoiceEnabled(value: boolean): void {
 // TTS
 
 let currentAudio: HTMLAudioElement | null = null
+/** Läufer-Token: stopSpeaking() entwertet laufende Sequenzen */
+let sequenceToken = 0
 /**
  * Cache pro (Stimme, Text) — hält die *Promises*, damit ein Prefetch und ein
  * direkt folgendes speak() dieselbe API-Anfrage teilen statt doppelt zu zahlen.
@@ -53,6 +55,7 @@ let currentAudio: HTMLAudioElement | null = null
 const ttsCache = new Map<string, Promise<string>>()
 
 export function stopSpeaking(): void {
+  sequenceToken++
   if (currentAudio) {
     currentAudio.pause()
     currentAudio = null
@@ -91,17 +94,47 @@ export function prefetchSpeech(text: string, voice: string = 'narrator'): void {
   ensureTtsUrl(text, resolveVoiceId(voice)).catch(() => {})
 }
 
-export async function speak(text: string, voice: string = 'narrator'): Promise<void> {
-  stopSpeaking()
-  if (!ELEVEN_KEY) return
-  try {
-    const url = await ensureTtsUrl(text, resolveVoiceId(voice))
+/** Spielt eine URL ab; resolved erst, wenn die Wiedergabe zu Ende ist. */
+function playToEnd(url: string): Promise<void> {
+  return new Promise(resolve => {
     const audio = new Audio(url)
     currentAudio = audio
-    await audio.play()
-  } catch {
-    // API nicht erreichbar/Quota: still bleiben statt Stilbruch per Browser-Stimme
+    audio.onended = () => resolve()
+    audio.onpause = () => resolve() // stopSpeaking() bricht die Zeile ab
+    audio.onerror = () => resolve()
+    audio.play().catch(() => resolve())
+  })
+}
+
+/**
+ * Das Drehbuch vorlesen: jede Zeile mit ihrer Stimme, nacheinander.
+ * onPartStart feuert, sobald eine Zeile wirklich zu spielen beginnt —
+ * daran hängen Typewriter-Start und die Bühnen-Auftritte der Sprecher.
+ * Scheitert eine Zeile (API), feuert der Cue trotzdem und es geht weiter.
+ */
+export async function speakSequence(
+  parts: { text: string; voice?: string }[],
+  onPartStart?: (index: number) => void,
+): Promise<void> {
+  stopSpeaking()
+  if (!ELEVEN_KEY) return
+  const token = sequenceToken
+  for (let i = 0; i < parts.length; i++) {
+    if (token !== sequenceToken) return
+    let url: string | null = null
+    try {
+      url = await ensureTtsUrl(parts[i].text, resolveVoiceId(parts[i].voice ?? 'narrator'))
+    } catch {
+      // still weitermachen — der Text läuft auch ohne Stimme
+    }
+    if (token !== sequenceToken) return
+    onPartStart?.(i)
+    if (url) await playToEnd(url)
   }
+}
+
+export async function speak(text: string, voice: string = 'narrator'): Promise<void> {
+  await speakSequence([{ text, voice }])
 }
 
 // ---------------------------------------------------------------------------

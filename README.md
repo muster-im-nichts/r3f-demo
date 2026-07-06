@@ -21,6 +21,29 @@ Dann http://localhost:5173 öffnen (auch am Smartphone im selben Netz nutzbar,
   `src/game/campaigns/index.ts`). Neue Geschichten entstehen als Daten in
   `src/game/campaigns/` (Format siehe `types.ts`; `validateCampaign` prüft
   die Struktur beim Dev-Start).
+
+## Drehbuch-Format
+
+Ein Story-Knoten ist ein kleines Drehbuch: `text` ist die Erzählung, optionale
+`dialog`-Zeilen folgen mit Sprecher — und die Bühne spielt mit:
+
+```ts
+text: { default: 'Die alte Hanne senkt die Stimme.' },
+dialog: [
+  { by: 'hanne', line: { default: 'Kurz vor dem Schrei huschte einer vorbei …' } },
+  { by: 'narrator', line: { default: 'Ein grünes Halstuch … das kennst du doch.' } },
+],
+cast: ['wache', 'karl'],   // optional: Grundbesetzung statt Szenen-Standard
+```
+
+- Dialogzeilen erscheinen in der Textbox mit goldenem Sprechernamen und werden
+  mit der Stimme des Sprechers vorgelesen (`voice`-Key des NPCs / der Figur).
+- Erreicht der Typewriter (oder die Sprachausgabe) eine Zeile, betritt ihr
+  Sprecher die Bühne — Auftritt auf Stichwort. `by: 'player'` spricht die
+  eigene Figur, `by: 'narrator'` erzählt weiter.
+- Ohne `cast` gilt die Standard-Besetzung der Szene (`SCENE_DEFAULT_CAST` in
+  `npcs.ts`). Referenz-Kampagnen für das Format: `taschenuhr` und
+  `heldengeschichte` (1760); die übrigen nutzen bislang Erzähltext + `cast`.
 - `src/scene/` — die R3F-Bühne: Backdrop mit Crossfade, prozeduraler
   Pixel-Avatar, Parallax-Kamera, Textur-Lader mit Platzhalter-Fallback.
 - `src/ui/` — DOM-Overlays: Start-, Adventure- und End-Screen, Letterbox.

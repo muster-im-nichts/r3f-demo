@@ -1,4 +1,5 @@
 import type { Campaign, GameSetup, NodeId, StoryNode, StoryOption, TextVariant } from './types'
+import { NPCS, SCENE_DEFAULT_CAST } from './npcs'
 
 export function getNode(campaign: Campaign, id: NodeId): StoryNode {
   const node = campaign.nodes[id]
@@ -44,6 +45,14 @@ export function validateCampaign(campaign: Campaign): void {
         errors.push(`Knoten "${node.id}": Option "${opt.label}" zielt auf fehlendes "${opt.target}"`)
       }
     }
+    for (const key of node.cast ?? []) {
+      if (!NPCS[key]) errors.push(`Knoten "${node.id}": cast-Eintrag "${key}" ist kein bekannter NPC`)
+    }
+    for (const line of node.dialog ?? []) {
+      if (line.by !== 'player' && line.by !== 'narrator' && !NPCS[line.by]) {
+        errors.push(`Knoten "${node.id}": Dialog-Sprecher "${line.by}" ist kein bekannter NPC`)
+      }
+    }
   }
 
   const reachable = new Set<NodeId>()
@@ -65,6 +74,55 @@ export function validateCampaign(campaign: Campaign): void {
   if (errors.length) {
     throw new Error(`Kampagne "${campaign.id}" ist fehlerhaft:\n- ${errors.join('\n- ')}`)
   }
+}
+
+/**
+ * Ein Sprech-Segment des Knoten-Drehbuchs: Erzähltext zuerst, dann die
+ * Dialogzeilen. Textbox, Sprachausgabe und Bühnen-Auftritte arbeiten alle
+ * auf dieser einen Liste — was gesagt wird, passiert.
+ */
+export interface Segment {
+  /** Sprecher-Key (NPC oder 'player'); fehlt beim Erzähler */
+  by?: string
+  /** Anzeigename in der Textbox (fehlt beim Erzähler) */
+  name?: string
+  /** Stimm-Key aus voices.json */
+  voice: string
+  text: string
+}
+
+export function nodeSegments(node: StoryNode, setup: GameSetup): Segment[] {
+  const segments: Segment[] = [{ voice: 'narrator', text: resolveText(node.text, setup) }]
+  for (const line of node.dialog ?? []) {
+    if (line.by === 'narrator') {
+      // Erzähler-Zwischenzeile (z.B. Regieanweisung nach einer Dialogzeile)
+      segments.push({ voice: 'narrator', text: resolveText(line.line, setup) })
+    } else if (line.by === 'player') {
+      segments.push({
+        by: 'player',
+        name: setup.character.name,
+        voice: setup.character.voice,
+        text: resolveText(line.line, setup),
+      })
+    } else {
+      const npc = NPCS[line.by]
+      segments.push({
+        by: line.by,
+        name: npc?.name ?? line.by,
+        voice: npc?.voice ?? 'narrator',
+        text: resolveText(line.line, setup),
+      })
+    }
+  }
+  return segments
+}
+
+/**
+ * Grundbesetzung eines Knotens (ohne die erst auf Stichwort auftretenden
+ * Dialog-Sprecher): eigenes cast-Feld oder Standard-Besetzung der Szene.
+ */
+export function nodeCast(node: StoryNode): string[] {
+  return node.cast ?? SCENE_DEFAULT_CAST[node.scene] ?? []
 }
 
 /** Alle Szenen-Keys einer Kampagne (für das Vorladen der Hintergründe). */

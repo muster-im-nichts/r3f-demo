@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react'
 import type { Ending, GameSetup, NodeId } from './game/types'
 import { getCampaign } from './game/campaigns'
-import { collectScenes, deriveExits, getNode, resolveText } from './game/engine'
+import {
+  collectScenes,
+  deriveExits,
+  getNode,
+  nodeCast,
+  nodeSegments,
+  resolveText,
+} from './game/engine'
 import { sceneLabel } from './game/scenes'
 import { preloadScenes } from './scene/textures'
 import { Stage } from './scene/Stage'
@@ -34,11 +41,14 @@ export default function App() {
   const [transit, setTransit] = useState<Transit | null>(null)
   // Knoten-Text wurde schon gelesen (Auto-Walk abgebrochen): sofort komplett zeigen
   const [instantText, setInstantText] = useState(false)
+  // Dialog-Sprecher, die ihr Stichwort schon hatten und aufgetreten sind
+  const [cuedCast, setCuedCast] = useState<string[]>([])
 
   const nodeId = phase.kind === 'start' ? null : phase.nodeId
   useEffect(() => {
     setWalkScene(null) // Story-Fortschritt holt die Bühne zur Knoten-Szene zurück
     setInstantText(false) // neuer Knoten = neuer Text, wieder mit Typewriter
+    setCuedCast([]) // Auftritte gelten pro Knoten
   }, [nodeId])
 
   if (phase.kind === 'start' || !setup) {
@@ -61,6 +71,19 @@ export default function App() {
   const node = getNode(campaign, phase.nodeId)
   const scene = walkScene ?? node.scene
   const exits = phase.kind === 'playing' && !transit ? deriveExits(campaign, node) : {}
+  // Das Drehbuch des Knotens: Erzähltext + Dialogzeilen mit Sprechern
+  const segments = nodeSegments(node, setup)
+  // Bühne = Grundbesetzung + alle Sprecher, die ihr Stichwort schon hatten;
+  // beim Durchwandern fremder Szenen (Transit) gilt deren Standard-Besetzung
+  const castOnStage = walkScene
+    ? nodeCast({ ...node, scene, cast: undefined })
+    : [...new Set([...nodeCast(node), ...cuedCast])]
+
+  /** Dialog-Zeile beginnt: ihr Sprecher betritt die Bühne */
+  const cueSpeaker = (by?: string) => {
+    if (!by || by === 'player') return
+    setCuedCast(current => (current.includes(by) ? current : [...current, by]))
+  }
 
   /** Knoten wirklich betreten (Text/Ende zeigen) */
   const finishNode = (target: NodeId) => {
@@ -76,7 +99,9 @@ export default function App() {
 
   /** Sprachausgabe des Zielknotens schon während Lauf/Übergang generieren */
   const prefetchNode = (target: NodeId) => {
-    prefetchSpeech(resolveText(getNode(campaign, target).text, setup))
+    for (const segment of nodeSegments(getNode(campaign, target), setup)) {
+      prefetchSpeech(segment.text, segment.voice)
+    }
   }
 
   /** Option gewählt: liegt das Ziel woanders, läuft die Figur erst hin */
@@ -144,6 +169,7 @@ export default function App() {
         epoch={setup.epoch}
         scene={scene}
         character={setup.character}
+        cast={castOnStage}
         speech={
           phase.kind === 'playing' && !transit && node.speech
             ? resolveText(node.speech, setup)
@@ -164,9 +190,10 @@ export default function App() {
         <>
           <AdventureBox
             key={node.id}
-            text={resolveText(node.text, setup)}
+            segments={segments}
             options={node.options}
             onChoose={choose}
+            onCue={cueSpeaker}
             instant={instantText}
           />
           <Signposts

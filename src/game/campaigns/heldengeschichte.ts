@@ -44,8 +44,11 @@ export const hochwasser: Campaign = {
       scene: 'marktplatz',
       text: {
         default:
-          'Du trommelst gegen Fensterläden. Verschlafene Gesichter erscheinen, jemand flucht über die Uhrzeit — aber als das Wort "Hochwasser" fällt, kommen sie doch heraus. Der alte Müller stapft heran und knurrt: "Reden hilft nichts. Was brauchst du: Hände oder Werkzeug?"',
+          'Du trommelst gegen Fensterläden. Verschlafene Gesichter erscheinen, jemand flucht über die Uhrzeit — aber als das Wort "Hochwasser" fällt, kommen sie doch heraus. Der alte Müller stapft heran und knurrt.',
       },
+      dialog: [
+        { by: 'mueller', line: { default: 'Reden hilft nichts. Was brauchst du: Hände oder Werkzeug?' } },
+      ],
       options: [
         { label: '"Werkzeug! Zur Mühle!"', target: 'h-muehle' },
         { label: 'Allein zurück zum Wehr rennen', target: 'h-wehr' },
@@ -57,8 +60,17 @@ export const hochwasser: Campaign = {
       scene: 'muehle',
       text: {
         default:
-          'In der Mühle riecht es nach Mehl und altem Holz. Zwischen Balken und Säcken findest du, was du brauchst: eine lange Hebestange — und, unter einer Plane, einen schweren Flaschenzug samt Tauwerk. Der Müller nickt: "Der Flaschenzug hebt dir das Tor, wenn du ihn richtig ansetzt. Die Stange allein … das wird ein Kampf."',
+          'In der Mühle riecht es nach Mehl und altem Holz. Zwischen Balken und Säcken findest du, was du brauchst: eine lange Hebestange — und, unter einer Plane, einen schweren Flaschenzug samt Tauwerk. Der Müller nickt.',
       },
+      dialog: [
+        {
+          by: 'mueller',
+          line: {
+            default:
+              'Der Flaschenzug hebt dir das Tor, wenn du ihn richtig ansetzt. Die Stange allein … das wird ein Kampf.',
+          },
+        },
+      ],
       options: [
         { label: 'Den Flaschenzug zum Wehr schleppen', target: 'h-plan' },
         { label: 'Nur die Stange nehmen und hebeln', target: 'h-kraft' },
@@ -70,8 +82,11 @@ export const hochwasser: Campaign = {
       scene: 'kanal',
       text: {
         default:
-          'Du stemmst dich mit aller Kraft gegen das Tor. Es knirscht, hebt sich einen Fingerbreit — und schlägt zurück. Der Schmerz fährt dir durch die Hände, und das Wasser leckt schon über die Uferkante. Rohe Kraft allein reicht hier nicht. Vom Ufer ruft der Müllerjunge: "Soll ich den Flaschenzug holen?!"',
+          'Du stemmst dich mit aller Kraft gegen das Tor. Es knirscht, hebt sich einen Fingerbreit — und schlägt zurück. Der Schmerz fährt dir durch die Hände, und das Wasser leckt schon über die Uferkante. Rohe Kraft allein reicht hier nicht. Vom Ufer ruft der Müllerjunge.',
       },
+      dialog: [
+        { by: 'junge', line: { default: 'Soll ich den Flaschenzug holen?!' } },
+      ],
       speech: {
         default: 'Mit dem Kopf, nicht mit den Knochen!',
       },
@@ -86,8 +101,18 @@ export const hochwasser: Campaign = {
       scene: 'kanal',
       text: {
         default:
-          'Ihr schlagt den Flaschenzug in den Querbalken über dem Wehr, das Tau knarrt, Hände greifen ineinander. "Und — zieht!" Zentimeter um Zentimeter hebt sich das Tor. Darunter drängt das Wasser wie ein lebendiges Tier. Jetzt bloß die Nerven behalten.',
+          'Ihr schlagt den Flaschenzug in den Querbalken über dem Wehr, das Tau knarrt, Hände greifen ineinander.',
       },
+      dialog: [
+        { by: 'mueller', line: { default: 'Und — zieht!' } },
+        {
+          by: 'narrator',
+          line: {
+            default:
+              'Zentimeter um Zentimeter hebt sich das Tor. Darunter drängt das Wasser wie ein lebendiges Tier. Jetzt bloß die Nerven behalten.',
+          },
+        },
+      ],
       options: [
         { label: 'Das Tor langsam und gleichmäßig öffnen', target: 'h-ende-held' },
         { label: 'Alles auf einmal hochreißen', target: 'h-ende-flut' },

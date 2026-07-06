@@ -120,6 +120,7 @@ export const blaupausen: Campaign = {
 
     'b-lager': {
       id: 'b-lager',
+      cast: ['neuling', 'staedter'],
       scene: 'finale',
       text: {
         default:
@@ -136,6 +137,7 @@ export const blaupausen: Campaign = {
 
     'b-zugriff': {
       id: 'b-zugriff',
+      cast: ['neuling'],
       scene: 'finale',
       text: {
         default:
@@ -149,6 +151,7 @@ export const blaupausen: Campaign = {
 
     'b-ende-erfolg': {
       id: 'b-ende-erfolg',
+      cast: ['neuling', 'staedter'],
       scene: 'finale',
       text: {
         default:

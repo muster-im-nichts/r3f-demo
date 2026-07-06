@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { StoryOption } from '../game/types'
+import type { Segment } from '../game/engine'
 import { useTypewriter } from './useTypewriter'
 import { click, blip } from '../audio/sfx'
 import { MOVE_KEYS } from '../scene/moveKeys'
@@ -8,7 +9,7 @@ import {
   voiceAvailable,
   isVoiceEnabled,
   setVoiceEnabled,
-  speak,
+  speakSequence,
   stopSpeaking,
   listenOnce,
   sttAvailable,
@@ -17,21 +18,24 @@ import {
 import { SpeakerIcon, MicIcon } from './icons'
 
 /**
- * Die klassische Adventure-Textbox am unteren Bühnenrand: Typewriter-Text,
- * "Was machst du?" und 2–3 Optionen. Tasten 1/2/3 wählen, jede andere Taste
- * oder ein Tap auf die Box überspringt den Typewriter. Über den Pfeil-Knopf
- * (oder eingeklappt: Tap auf die Leiste) lässt sie sich wegklappen, um in
- * die Szene einzutauchen.
+ * Die klassische Adventure-Textbox am unteren Bühnenrand — jetzt als
+ * Drehbuch: Erzähltext und Dialogzeilen mit goldenem Sprechernamen, jede
+ * Zeile mit eigener Stimme. Erreicht der Typewriter eine Zeile, feuert
+ * onCue(by) und ihr Sprecher betritt die Bühne. Tasten 1/2/3 wählen, jede
+ * andere Taste oder ein Tap überspringt den Typewriter.
  */
 export function AdventureBox({
-  text,
+  segments,
   options,
   onChoose,
+  onCue,
   instant = false,
 }: {
-  text: string
+  segments: Segment[]
   options: StoryOption[]
   onChoose: (target: string) => void
+  /** Eine Drehbuch-Zeile ist dran — ihr Sprecher soll auftreten */
+  onCue?: (by?: string) => void
   /** Text sofort komplett zeigen (Knoten wurde schon einmal gelesen) */
   instant?: boolean
 }) {
@@ -44,15 +48,41 @@ export function AdventureBox({
   )
   const [listening, setListening] = useState(false)
   const [heard, setHeard] = useState<string | null>(null)
-  const { shown, done, skip } = useTypewriter(text, instant, voiceHold)
+
+  // Drehbuch → ein durchgehender Typewriter-Text; pro Zeile Startoffset merken
+  const parts = useMemo(() => {
+    let offset = 0
+    return segments.map(segment => {
+      const prefix = segment.name ? `${segment.name}: ` : ''
+      const full = prefix + segment.text
+      const part = { ...segment, prefix, full, start: offset }
+      offset += full.length + 2 // '\n\n'-Trenner
+      return part
+    })
+  }, [segments])
+  const fullText = useMemo(() => parts.map(p => p.full).join('\n\n'), [parts])
+
+  const { shown, done, skip } = useTypewriter(fullText, instant, voiceHold)
   const scrollRef = useRef<HTMLDivElement>(null)
   const narrow = isNarrowScreen()
 
+  // Auftritts-Stichwort, sobald der Typewriter eine Zeile erreicht —
+  // funktioniert damit auch komplett ohne Sprachausgabe
+  const cued = useRef(new Set<number>())
+  useEffect(() => {
+    parts.forEach((part, i) => {
+      if (shown.length > part.start && !cued.current.has(i)) {
+        cued.current.add(i)
+        onCue?.(part.by)
+      }
+    })
+  }, [shown, parts, onCue])
+
   // Vorlesen: die Box wird pro Story-Knoten neu gemountet (key=node.id),
-  // also einmal beim Erscheinen sprechen; beim Abbau verstummen. Bereits
-  // gelesene Knoten (instant) werden nicht erneut vorgelesen. speak()
-  // resolved beim Wiedergabestart und löst dann den Typewriter aus; ein
-  // Timeout verhindert, dass eine lahme API das Lesen blockiert.
+  // also einmal beim Erscheinen die Sequenz sprechen; beim Abbau verstummen.
+  // Bereits gelesene Knoten (instant) werden nicht erneut vorgelesen.
+  // Der erste Zeilen-Start löst den Typewriter aus; ein Timeout verhindert,
+  // dass eine lahme API das Lesen blockiert.
   useEffect(() => {
     if (!voiceOn || instant) {
       setVoiceHold(false)
@@ -61,7 +91,13 @@ export function AdventureBox({
     let active = true
     const release = () => active && setVoiceHold(false)
     const fallback = setTimeout(release, 3000)
-    speak(text).finally(release)
+    speakSequence(
+      parts.map(p => ({ text: p.text, voice: p.voice })),
+      index => {
+        if (index === 0) release()
+        onCue?.(parts[index].by)
+      },
+    ).finally(release)
     return () => {
       active = false
       clearTimeout(fallback)
@@ -199,18 +235,33 @@ export function AdventureBox({
           ▼
         </button>
       </div>
-      <p
-        style={{
-          fontFamily: 'var(--font-text)',
-          fontSize: narrow ? '16px' : 'clamp(17px, 4.4vw, 28px)',
-          lineHeight: 1.25,
-          minHeight: '1.3em',
-          color: 'var(--color-text)',
-        }}
-      >
-        {shown}
-        {!done && <span style={{ opacity: 0.7 }}>▌</span>}
-      </p>
+      {parts.map((part, i) => {
+        const partShown = shown.slice(part.start, part.start + part.full.length)
+        if (!partShown) return null
+        const prefixShown = partShown.slice(0, part.prefix.length)
+        const textShown = partShown.slice(part.prefix.length)
+        const isLastVisible =
+          i === parts.length - 1 || shown.length <= (parts[i + 1]?.start ?? Infinity)
+        return (
+          <p
+            key={i}
+            style={{
+              fontFamily: 'var(--font-text)',
+              fontSize: narrow ? '16px' : 'clamp(17px, 4.4vw, 28px)',
+              lineHeight: 1.25,
+              minHeight: i === 0 ? '1.3em' : undefined,
+              marginTop: i === 0 ? 0 : '6px',
+              color: 'var(--color-text)',
+            }}
+          >
+            {part.prefix && (
+              <span style={{ color: 'var(--color-gold)' }}>{prefixShown}</span>
+            )}
+            {textShown}
+            {!done && isLastVisible && <span style={{ opacity: 0.7 }}>▌</span>}
+          </p>
+        )
+      })}
       {done && (
       <div style={{ marginTop: '8px', animation: 'fade-in 0.25s ease-out' }}>
         <div

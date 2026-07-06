@@ -19,11 +19,30 @@ export interface StoryOption {
   target: NodeId
 }
 
+/**
+ * Drehbuch-Zeile: wird in der gemeinsamen Textbox mit Sprechernamen gezeigt,
+ * mit der Stimme des Sprechers vorgelesen — und ihr Sprecher betritt die
+ * Bühne, sobald die Zeile dran ist. by: NPC-Key aus npcs.ts, 'player'
+ * (die eigene Figur) oder 'narrator' (Erzähler-Zwischenzeile).
+ */
+export interface DialogLine {
+  by: string
+  line: TextVariant
+}
+
 export interface StoryNode {
   id: NodeId
   /** Szenen-Key, wird zu `${epoche}-${scene}` aufgelöst (z.B. "1760-marktplatz") */
   scene: string
+  /** Erzähltext (Erzählerstimme) — das Drehbuch beginnt immer hiermit */
   text: TextVariant
+  /** Dialogzeilen nach dem Erzähltext, je mit eigener Stimme und Auftritt */
+  dialog?: DialogLine[]
+  /**
+   * Wer auf der Bühne steht (NPC-Keys). Fehlt das Feld, gilt die
+   * Standard-Besetzung der Szene; Dialog-Sprecher treten zusätzlich auf.
+   */
+  cast?: string[]
   /** Optionale Sprechblase über dem Avatar */
   speech?: TextVariant
   /** 2–3 Optionen; fehlt genau bei Endknoten */

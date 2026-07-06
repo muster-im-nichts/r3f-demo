@@ -5,6 +5,7 @@ import { CameraRig } from './CameraRig'
 import { Backdrop } from './Backdrop'
 import { Avatar } from './Avatar'
 import { Props } from './Props'
+import { NpcStage } from './NpcStage'
 import { Curtain } from './Curtain'
 import { Atmosphere } from './Atmosphere'
 import type { Character, EpochId } from '../game/types'
@@ -38,6 +39,7 @@ export function Stage({
   epoch,
   scene,
   character,
+  cast,
   speech,
   curtainClosed,
   exits,
@@ -51,6 +53,8 @@ export function Stage({
   epoch: EpochId
   scene: string
   character: Character
+  /** Aktuelle Besetzung der Bühne (NPC-Keys); Auftritte/Abgänge animiert */
+  cast: string[]
   speech?: string
   curtainClosed: boolean
   /** Begehbare Bühnenausgänge — gesperrte Seiten stoppen die Figur am Bildrand */
@@ -73,6 +77,7 @@ export function Stage({
         <CameraRig />
         <Backdrop epoch={epoch} scene={scene} />
         <Props scene={scene} leaving={leaving} />
+        <NpcStage scene={scene} cast={cast} leaving={leaving} />
         <Avatar
           character={character}
           speech={speech}

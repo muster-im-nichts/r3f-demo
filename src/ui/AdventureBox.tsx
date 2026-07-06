@@ -8,14 +8,13 @@ import { isNarrowScreen } from './responsive'
 import {
   voiceAvailable,
   isVoiceEnabled,
-  setVoiceEnabled,
   speakSequence,
   stopSpeaking,
   listenOnce,
   sttAvailable,
   matchChoice,
 } from '../audio/voice'
-import { SpeakerIcon, MicIcon } from './icons'
+import { MicIcon } from './icons'
 
 /**
  * Die klassische Adventure-Textbox am unteren Bühnenrand — jetzt als
@@ -40,12 +39,10 @@ export function AdventureBox({
   instant?: boolean
 }) {
   const [collapsed, setCollapsed] = useState(false)
-  const [voiceOn, setVoiceOn] = useState(isVoiceEnabled)
   // Typewriter erst starten, wenn die Stimme wirklich spielt — sonst liest
-  // man schon und die Stimme setzt verspätet ein
-  const [voiceHold, setVoiceHold] = useState(
-    () => voiceAvailable() && isVoiceEnabled() && !instant,
-  )
+  // man schon und die Stimme setzt verspätet ein. Ob gesprochen wird,
+  // entscheidet allein der Sound-Schalter oben rechts (isVoiceEnabled).
+  const [voiceHold, setVoiceHold] = useState(() => isVoiceEnabled() && !instant)
   const [listening, setListening] = useState(false)
   const [heard, setHeard] = useState<string | null>(null)
 
@@ -84,7 +81,7 @@ export function AdventureBox({
   // Der erste Zeilen-Start löst den Typewriter aus; ein Timeout verhindert,
   // dass eine lahme API das Lesen blockiert.
   useEffect(() => {
-    if (!voiceOn || instant) {
+    if (!isVoiceEnabled() || instant) {
       setVoiceHold(false)
       return
     }
@@ -104,7 +101,7 @@ export function AdventureBox({
       stopSpeaking()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voiceOn])
+  }, [])
 
   const choose = (target: string) => {
     stopSpeaking()
@@ -197,44 +194,26 @@ export function AdventureBox({
         overflowY: 'auto',
       }}
     >
-      {/* Vorlesen an/aus + Einklappen, um die Szene freizugeben */}
-      <div style={{ position: 'sticky', top: 0, float: 'right', display: 'flex', gap: '2px' }}>
-        {voiceAvailable() && (
-          <button
-            aria-label={voiceOn ? 'Vorlesen ausschalten' : 'Vorlesen einschalten'}
-            onClick={e => {
-              e.stopPropagation()
-              const next = !voiceOn
-              setVoiceEnabled(next)
-              setVoiceOn(next)
-            }}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: voiceOn ? 'var(--color-gold)' : 'var(--color-text-dim)',
-              padding: '2px 2px 4px 10px',
-            }}
-          >
-            <SpeakerIcon on={voiceOn} size={15} />
-          </button>
-        )}
-        <button
-          aria-label="Textbox einklappen"
-          onClick={e => {
-            e.stopPropagation()
-            setCollapsed(true)
-          }}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--color-text-dim)',
-            fontSize: '14px',
-            padding: '0 2px 4px 10px',
-          }}
-        >
-          ▼
-        </button>
-      </div>
+      {/* Einklappen, um die Szene freizugeben (Sound regelt der Schalter oben rechts) */}
+      <button
+        aria-label="Textbox einklappen"
+        onClick={e => {
+          e.stopPropagation()
+          setCollapsed(true)
+        }}
+        style={{
+          position: 'sticky',
+          top: 0,
+          float: 'right',
+          background: 'transparent',
+          border: 'none',
+          color: 'var(--color-text-dim)',
+          fontSize: '14px',
+          padding: '0 2px 4px 10px',
+        }}
+      >
+        ▼
+      </button>
       {parts.map((part, i) => {
         const partShown = shown.slice(part.start, part.start + part.full.length)
         if (!partShown) return null

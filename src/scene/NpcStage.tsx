@@ -23,7 +23,8 @@ const WALK_SPEED = 1.5
 const SLOTS: Record<string, [number, number][]> = {
   marktplatz: [
     [1.0, -0.85],
-    [2.3, -1.2],
+    // nicht weiter rechts: dort steht der Marktstand (x 2.0, r 0.95)
+    [0.1, -1.2],
     [-2.4, -1.0],
   ],
   werkstatt: [
@@ -58,12 +59,14 @@ const SLOTS: Record<string, [number, number][]> = {
   ],
   bahnhof: [
     [0.85, -0.9],
-    [2.1, -1.1],
+    // rechts liegen die Säcke (x 2.5, r 0.52)
+    [1.5, -1.15],
     [-2.4, -0.95],
   ],
   fabrik: [
     [0.5, -0.95],
-    [1.9, -1.15],
+    // frei zwischen Werkbank (1.35/-0.7, r 0.78) und Kiste (2.3/0.1)
+    [2.4, -0.45],
     [-2.4, -0.9],
   ],
 }

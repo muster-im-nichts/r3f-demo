@@ -54,10 +54,12 @@ cast: ['wache', 'karl'],   // optional: Grundbesetzung statt Szenen-Standard
 
 ## Sprache (TTS/STT)
 
-Das Sprachfeature erscheint nur, wenn ein ElevenLabs-Key gesetzt ist —
-dann liest der Lautsprecher-Knopf in der Textbox die Geschichte vor
-(ElevenLabs TTS) und der Mikrofon-Knopf wählt Optionen per Sprache
-("die Erste", "zwei", oder Worte aus der Option). Dazu eine `.env` anlegen:
+Das Sprachfeature existiert nur, wenn ein ElevenLabs-Key gesetzt ist —
+dann wird das Drehbuch automatisch vorgelesen und der Mikrofon-Knopf wählt
+Optionen per Sprache ("die Erste", "zwei", oder Worte aus der Option).
+Der eine Sound-Schalter oben rechts regelt alles: Ist der Ton aus, spielt
+weder Musik noch Sprache — und es werden auch keine TTS-Aufrufe abgesetzt.
+Dazu eine `.env` anlegen:
 
 ```
 VITE_ELEVENLABS_API_KEY=…

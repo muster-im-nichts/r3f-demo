@@ -13,6 +13,7 @@
  */
 
 import VOICES from './voices.json'
+import { isMuted } from './audio'
 
 const ELEVEN_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined
 /** Optionaler Override für die Erzählstimme (sonst voices.json → narrator) */
@@ -26,20 +27,17 @@ function resolveVoiceId(key: string): string {
   return (VOICES as Record<string, { id: string }>)[key]?.id ?? VOICES.narrator.id
 }
 
-const VOICE_KEY = 'ebw-voice'
-
 /** Nur mit ElevenLabs-Key gibt es das Sprachfeature überhaupt */
 export function voiceAvailable(): boolean {
   return Boolean(ELEVEN_KEY)
 }
 
+/**
+ * Sprache hängt am globalen Sound-Schalter (Letterbox, oben rechts):
+ * Sound aus = keine Sprachausgabe und keine TTS-API-Aufrufe.
+ */
 export function isVoiceEnabled(): boolean {
-  return localStorage.getItem(VOICE_KEY) === '1'
-}
-
-export function setVoiceEnabled(value: boolean): void {
-  localStorage.setItem(VOICE_KEY, value ? '1' : '0')
-  if (!value) stopSpeaking()
+  return Boolean(ELEVEN_KEY) && !isMuted()
 }
 
 // ---------------------------------------------------------------------------
@@ -90,7 +88,7 @@ function ensureTtsUrl(text: string, voiceId: string): Promise<string> {
  * (nahezu) sofort mit dem Text zusammen.
  */
 export function prefetchSpeech(text: string, voice: string = 'narrator'): void {
-  if (!ELEVEN_KEY || !isVoiceEnabled()) return
+  if (!isVoiceEnabled()) return
   ensureTtsUrl(text, resolveVoiceId(voice)).catch(() => {})
 }
 
@@ -117,7 +115,7 @@ export async function speakSequence(
   onPartStart?: (index: number) => void,
 ): Promise<void> {
   stopSpeaking()
-  if (!ELEVEN_KEY) return
+  if (!isVoiceEnabled()) return
   const token = sequenceToken
   for (let i = 0; i < parts.length; i++) {
     if (token !== sequenceToken) return

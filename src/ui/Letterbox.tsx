@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { isMuted, setMuted } from '../audio/audio'
+import { stopSpeaking } from '../audio/voice'
 import { SpeakerIcon } from './icons'
 
 const barStyle = {
@@ -35,6 +36,8 @@ export function Letterbox() {
           const next = !muted
           setMuted(next)
           setMutedState(next)
+          // Der eine Schalter regelt alles: stumm heißt auch keine Sprache
+          if (next) stopSpeaking()
         }}
         aria-label={muted ? 'Ton einschalten' : 'Ton ausschalten'}
         style={{

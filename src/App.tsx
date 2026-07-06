@@ -23,7 +23,7 @@ import { Signposts } from './ui/Signposts'
 import { ensureAudio } from './audio/audio'
 import { startMusic } from './audio/sequencer'
 import { success, failure } from './audio/sfx'
-import { isVoiceEnabled, prefetchSpeech, speak, voiceAvailable } from './audio/voice'
+import { prefetchSpeech, speak } from './audio/voice'
 
 type Phase =
   | { kind: 'start' }
@@ -119,7 +119,7 @@ export default function App() {
     )
     const segment: Segment = { by: npcKey, name: npc.name, voice: npc.voice ?? 'narrator', text }
     setChatter(current => [...current, segment])
-    if (voiceAvailable() && isVoiceEnabled()) speak(text, segment.voice)
+    speak(text, segment.voice) // prüft selbst, ob der Sound an ist
   }
 
   /** Knoten wirklich betreten (Text/Ende zeigen) */

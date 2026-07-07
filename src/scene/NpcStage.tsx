@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import type { Group } from 'three'
 import { NpcFigure } from './NpcFigure'
 import { NPCS } from '../game/npcs'
-import { stageSqueeze } from './propSets'
+import { getColliders, stageSqueeze } from './propSets'
 
 /**
  * Der Bühnen-Choreograf: bespielt die Szene mit der aktuellen Besetzung.
@@ -77,8 +77,28 @@ const FALLBACK_SLOTS: [number, number][] = [
   [-2.4, -0.95],
 ]
 
+/**
+ * Auftrittsseite: von dort, wo auf der Laufhöhe des Platzes weniger
+ * Requisiten im Weg stehen (rein statisch gezählt, kein Pathfinding).
+ * Bei Gleichstand vom näheren Bühnenrand.
+ */
+function entrySide(scene: string, slot: [number, number], squeeze: number): 1 | -1 {
+  const colliders = getColliders(scene, squeeze)
+  const slotX = slot[0] * squeeze
+  const slotZ = slot[1]
+  const blockers = (side: 1 | -1) =>
+    colliders.filter(
+      c => Math.abs(c.z - slotZ) < c.r + 0.35 && (side === 1 ? c.x > slotX : c.x < slotX),
+    ).length
+  const right = blockers(1)
+  const left = blockers(-1)
+  if (right === left) return (Math.sign(slotX) || 1) as 1 | -1
+  return right < left ? 1 : -1
+}
+
 function NpcActor({
   npcKey,
+  scene,
   slot,
   spawnInPlace,
   exiting,
@@ -86,6 +106,7 @@ function NpcActor({
   onTalk,
 }: {
   npcKey: string
+  scene: string
   slot: [number, number]
   /** Direkt am Platz erscheinen (Szenenwechsel) statt hereinzulaufen */
   spawnInPlace: boolean
@@ -99,7 +120,9 @@ function NpcActor({
   const viewportWidth = useThree(s => s.viewport.width)
   const squeeze = stageSqueeze(viewportWidth)
   const homeX = slot[0] * squeeze
-  const edgeX = Math.sign(homeX || 1) * (viewportWidth / 2 + 1.2)
+  // Auftritt (und Abgang) über die hindernisärmere Seite
+  const side = useMemo(() => entrySide(scene, slot, squeeze), [scene, slot, squeeze])
+  const edgeX = side * (viewportWidth / 2 + 1.2)
   const pos = useRef({ x: spawnInPlace ? homeX : edgeX, z: slot[1] })
   const [walkDir, setWalkDir] = useState<1 | -1 | null>(null)
   const walkPhase = useRef(0)
@@ -210,6 +233,7 @@ export function NpcStage({
         <NpcActor
           key={`${shownScene.current}-${entry.key}`}
           npcKey={entry.key}
+          scene={shownScene.current}
           slot={entry.slot}
           spawnInPlace={entry.spawnInPlace}
           exiting={entry.exiting}

@@ -118,7 +118,7 @@ function PropGroup({
  * bespielt, während die alte noch versinkt (überlappend) — die Bühne ist
  * nie leer, man ist immer in der einen oder schon in der nächsten Szene.
  */
-type Slot = { id: number; scene: string; mode: 'enter' | 'exit' }
+type Slot = { id: number; scene: string; mode: 'enter' | 'exit'; done?: boolean }
 
 export function Props({ scene, leaving }: { scene: string; leaving: boolean }) {
   const [slots, setSlots] = useState<Slot[]>([{ id: 0, scene, mode: 'enter' }])
@@ -127,22 +127,28 @@ export function Props({ scene, leaving }: { scene: string; leaving: boolean }) {
   useEffect(() => {
     setSlots(current => {
       const active = current[current.length - 1]
-      if (active.scene === scene) {
+      if (active && active.scene === scene) {
         // gleiche Szene: Abgang beim Rauslaufen, Rückkehr beim Umkehren
         const mode = leaving ? 'exit' : 'enter'
         if (active.mode === mode) return current
-        return [...current.slice(0, -1), { ...active, mode }]
+        return [...current.slice(0, -1), { ...active, mode, done: false }]
       }
-      // Szenenwechsel: alles Alte versinkt, das Neue kommt gleichzeitig hoch
+      // Szenenwechsel: fertig Versunkenes entsorgen, der Rest versinkt
+      // weiter, während das Neue gleichzeitig hochkommt
       return [
-        ...current.map(slot => ({ ...slot, mode: 'exit' as const })),
+        ...current.filter(slot => !slot.done).map(slot => ({ ...slot, mode: 'exit' as const })),
         { id: nextId.current++, scene, mode: 'enter' as const },
       ]
     })
   }, [scene, leaving])
 
-  const drop = (id: number) => {
-    setSlots(current => current.filter(slot => slot.id !== id || slot.mode !== 'exit'))
+  // Abgang fertig: alte Gruppen abbauen — die letzte bleibt (unsichtbar)
+  // stehen, damit die Liste nie leer ist und Umkehren sie wiederbeleben kann
+  const finishExit = (id: number) => {
+    setSlots(current => {
+      if (current.length > 1) return current.filter(slot => slot.id !== id)
+      return current.map(slot => (slot.id === id ? { ...slot, done: true } : slot))
+    })
   }
 
   return (
@@ -153,7 +159,7 @@ export function Props({ scene, leaving }: { scene: string; leaving: boolean }) {
           scene={slot.scene}
           mode={slot.mode}
           delay={slot.mode === 'enter' ? 0.1 : 0}
-          onExited={slot.mode === 'exit' ? () => drop(slot.id) : undefined}
+          onExited={slot.mode === 'exit' ? () => finishExit(slot.id) : undefined}
         />
       ))}
     </>

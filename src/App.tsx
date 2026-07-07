@@ -124,6 +124,10 @@ export default function App() {
 
   /** Knoten wirklich betreten (Text/Ende zeigen) */
   const finishNode = (target: NodeId) => {
+    // Plaudereien synchron räumen: der Reset-Effekt käme erst NACH dem
+    // Mount der neuen Textbox — die hätte die alten Zeilen dann schon in
+    // ihrer Sprech-Sequenz und würde sie erneut abspielen
+    setChatter([])
     const next = getNode(campaign, target)
     if (next.ending) {
       if (next.ending === 'success') success()

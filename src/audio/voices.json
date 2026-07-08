@@ -1,18 +1,18 @@
 {
   "narrator": {
-    "name": "Adam",
-    "id": "pNInz6obpgDQGcFmaJgB",
-    "description": "Tiefe, ruhige Erzählstimme; überzeugendes Deutsch — Standard für den Story-Text"
+    "name": "Brian",
+    "id": "nPczCjzI2devNBz1zQrb",
+    "description": "Tiefe, ruhige Erzählstimme (aktuelles Standard-Set) — Standard für den Story-Text"
   },
   "narrator-female": {
-    "name": "Serena",
-    "id": "pMsXgVXv3BLzUgSXRplE",
-    "description": "Angenehme, reife Frauenstimme; gutes Deutsch — alternative Erzählerin"
+    "name": "Alice",
+    "id": "Xb7hH8MSUJpSbSDYk0k2",
+    "description": "Klare, selbstbewusste Frauenstimme (aktuelles Standard-Set) — alternative Erzählerin, Greta"
   },
   "young-woman": {
     "name": "Matilda",
     "id": "XrExE9yKIg1WjnnlVkGX",
-    "description": "Warme junge Frauenstimme; gutes Deutsch — Greta, Lotte"
+    "description": "Warme junge Frauenstimme; gutes Deutsch — Lotte"
   },
   "soft-woman": {
     "name": "Sarah",
@@ -20,9 +20,9 @@
     "description": "Weiche junge Frauenstimme; gutes Deutsch"
   },
   "young-man": {
-    "name": "Antoni",
-    "id": "ErXwobaYiN019PkySvjV",
-    "description": "Ausgewogene junge Männerstimme; gutes Deutsch — Wilhelm, Karl"
+    "name": "Liam",
+    "id": "TX3LPaxmHKxFdv7VOQHJ",
+    "description": "Junge Männerstimme (aktuelles Standard-Set) — Wilhelm, Karl, der Neue"
   },
   "old-woman": {
     "name": "Lily",
@@ -30,18 +30,18 @@
     "description": "Raue, reifere Frauenstimme — nächstliegende Premade für alte Frauen (Hanne)"
   },
   "old-man": {
-    "name": "James",
-    "id": "ZQe5CZNOzWyzPSCn5a3c",
-    "description": "Ruhige alte Männerstimme — Müller, Wachtmeister"
+    "name": "Bill",
+    "id": "pqHfZKP75CvOlQylNhV4",
+    "description": "Ältere, ruhige Lesestimme (aktuelles Standard-Set) — Müller, Wachtmeister, Runge, Schiffer"
   },
   "gruff-man": {
     "name": "George",
     "id": "JBFqnCBsd6RMkjVDRZzb",
-    "description": "Raue, kernige Männerstimme — Wache, Brigadier, die Krähe"
+    "description": "Raue, kernige Männerstimme — Wache, Brigadier, die Krähe, Heizer"
   },
   "child": {
     "name": "Gigi",
     "id": "jBpfuIE2acCO8z3wKNLl",
-    "description": "Kindliche Stimme — Müllerjunge"
+    "description": "Kindliche Stimme (Legacy-Premade — falls im Account nicht verfügbar, greift automatisch die Erzählstimme) — Müllerjunge"
   }
 }

@@ -69,6 +69,10 @@ VITE_ELEVENLABS_VOICE_ID=…   # optional, überschreibt die Erzählstimme
 Die Stimmen sind in `src/audio/voices.json` unter semantischen Keys
 ("narrator", "old-woman", …) verwaltet — Charaktere und NPCs referenzieren
 nur den Key (`voice: 'old-woman'`), die IDs werden zentral gepflegt.
+Ob alle IDs im eigenen Account verfügbar sind, prüft `npm run check-voices`;
+scheitert eine Stimme zur Laufzeit, spricht ersatzweise der Erzähler
+(Warnung in der Browser-Konsole). TTS-Anfragen laufen nacheinander, damit
+das Parallel-Limit kleiner Pläne keine Zeilen verschluckt.
 Beim Wählen einer Option wird die Sprachausgabe des Zielknotens schon
 vorgeneriert; der Typewriter startet erst mit der Wiedergabe, damit Text
 und Stimme zusammen beginnen.

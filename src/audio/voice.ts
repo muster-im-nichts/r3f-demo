@@ -60,11 +60,25 @@ export function stopSpeaking(): void {
   }
 }
 
+/**
+ * TTS-Anfragen laufen strikt nacheinander: Prefetch eines dialogreichen
+ * Knotens würde sonst 4–5 Anfragen parallel feuern — Free/Starter-Pläne
+ * erlauben nur 2 gleichzeitige Requests, der Rest scheitert mit 429 und
+ * die Zeilen blieben stumm.
+ */
+let fetchQueue: Promise<unknown> = Promise.resolve()
+
+function enqueue<T>(task: () => Promise<T>): Promise<T> {
+  const run = fetchQueue.then(task, task)
+  fetchQueue = run.catch(() => {})
+  return run
+}
+
 function ensureTtsUrl(text: string, voiceId: string): Promise<string> {
   const cacheKey = `${voiceId}|${text}`
   const cached = ttsCache.get(cacheKey)
   if (cached) return cached
-  const pending = (async () => {
+  const pending = enqueue(async () => {
     const res = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_64`,
       {
@@ -73,13 +87,36 @@ function ensureTtsUrl(text: string, voiceId: string): Promise<string> {
         body: JSON.stringify({ text, model_id: 'eleven_multilingual_v2' }),
       },
     )
-    if (!res.ok) throw new Error(`ElevenLabs TTS: HTTP ${res.status}`)
+    if (!res.ok) {
+      console.warn(`TTS fehlgeschlagen: HTTP ${res.status} für Stimme ${voiceId} — voices.json prüfen (npm run check-voices)`)
+      throw new Error(`ElevenLabs TTS: HTTP ${res.status}`)
+    }
     return URL.createObjectURL(await res.blob())
-  })()
+  })
   // Fehlgeschlagene Anfragen nicht cachen, sonst bleibt der Knoten für immer stumm
   pending.catch(() => ttsCache.delete(cacheKey))
   ttsCache.set(cacheKey, pending)
   return pending
+}
+
+/**
+ * URL für eine Zeile beschaffen — scheitert die Wunschstimme (z.B. ID im
+ * Account nicht verfügbar), spricht ersatzweise der Erzähler statt Stille.
+ */
+async function ttsUrlWithFallback(text: string, voiceId: string): Promise<string | null> {
+  try {
+    return await ensureTtsUrl(text, voiceId)
+  } catch {
+    const narratorId = resolveVoiceId('narrator')
+    if (voiceId !== narratorId) {
+      try {
+        return await ensureTtsUrl(text, narratorId)
+      } catch {
+        return null
+      }
+    }
+    return null
+  }
 }
 
 /**
@@ -119,12 +156,12 @@ export async function speakSequence(
   const token = sequenceToken
   for (let i = 0; i < parts.length; i++) {
     if (token !== sequenceToken) return
-    let url: string | null = null
-    try {
-      url = await ensureTtsUrl(parts[i].text, resolveVoiceId(parts[i].voice ?? 'narrator'))
-    } catch {
-      // still weitermachen — der Text läuft auch ohne Stimme
-    }
+    // Wunschstimme, sonst Erzähler-Fallback; im schlimmsten Fall bleibt
+    // nur diese eine Zeile stumm und der Text läuft weiter
+    const url = await ttsUrlWithFallback(
+      parts[i].text,
+      resolveVoiceId(parts[i].voice ?? 'narrator'),
+    )
     if (token !== sequenceToken) return
     onPartStart?.(i)
     if (url) await playToEnd(url)

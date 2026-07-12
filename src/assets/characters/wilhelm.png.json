@@ -3,8 +3,8 @@
     "key": "wilhelm",
     "type": "character",
     "model": "fal-ai/flux/dev",
-    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, standing idle in relaxed pose, three-quarter view facing right, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. young clockmaker journeyman with calm curious face, dark hair, flat cap, steel-blue work coat (#33506b) with mint-green scarf (#7ec4a2), sturdy build",
-    "seed": 900202,
+    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, in the style of classic SCUMM adventures, standing idle in relaxed pose, three-quarter view facing right, natural realistic body proportions, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. young clockmaker journeyman with calm curious face, dark hair, flat cap, steel-blue work coat (#33506b) with mint-green scarf (#7ec4a2), sturdy build",
+    "seed": 901202,
     "steps": 28,
     "genSize": {
       "width": 640,
@@ -19,6 +19,6 @@
     "flip": false,
     "pixelate": 1
   },
-  "sourceUrl": "https://v3b.fal.media/files/b/0aa20134/hlN8vKVH6EQtmmRRXJNFw_H9HURGtB.png",
-  "generatedAt": "2026-07-12T21:50:09.913Z"
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa201a0/5vHBZGNe63QlUnwgkyEpt_lnw9gWYB.png",
+  "generatedAt": "2026-07-12T22:08:10.915Z"
 }

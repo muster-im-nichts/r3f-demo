@@ -3,7 +3,7 @@
     "key": "1960-kanal",
     "type": "scene",
     "model": "fal-ai/flux/dev",
-    "prompt": "fine pixel art, 16-bit hi-bit style, point-and-click adventure game background, in the style of classic SCUMM adventures, painterly dithering, muted palette, moody theatrical night lighting, wide shot at street level, empty scene, no people, no animals, no text, no watermark. East German town Eberswalde in 1960, GDR era, neon signs, concrete, cranes and quiet optimism. frozen industrial canal at night, ice on the water, moored coal barge, cranes and chimneys behind, cold blue street lamps",
+    "prompt": "fine pixel art, 16-bit hi-bit style, point-and-click adventure game background, in the style of classic SCUMM adventures, painterly dithering, muted palette, moody theatrical night lighting, flat side-on view like a theater stage set, building facades parallel to the picture plane, street running level across the bottom edge, seen straight-on from across the street, empty scene, no people, no animals, no text, no watermark. East German town Eberswalde in 1960, GDR era, neon signs, concrete, cranes and quiet optimism. frozen industrial canal running horizontally across the frame, ice on the water, coal barge in full side profile, quay in the foreground, cranes and chimneys behind, cold blue street lamps",
     "seed": 196006,
     "steps": 28,
     "genSize": {
@@ -19,6 +19,6 @@
     "flip": false,
     "pixelate": 1
   },
-  "sourceUrl": "https://v3b.fal.media/files/b/0aa20134/7ldMaGggZKrbDnX-Ef-pQ.png",
-  "generatedAt": "2026-07-12T21:50:04.989Z"
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20192/_udJr15eOLzhnBMpWf1bC.png",
+  "generatedAt": "2026-07-12T22:05:47.138Z"
 }

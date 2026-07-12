@@ -3,7 +3,7 @@
     "key": "greta",
     "type": "character",
     "model": "fal-ai/flux/dev",
-    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, standing idle in relaxed pose, three-quarter view facing right, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. market woman with sharp watchful eyes, brown hair pinned up, rust-red dress (#8a4b3c) with golden-yellow shawl (#d9a441), apron",
+    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, in the style of classic SCUMM adventures, standing idle in relaxed pose, three-quarter view facing right, natural realistic body proportions, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. market woman with sharp watchful eyes, brown hair pinned up, rust-red dress (#8a4b3c) with golden-yellow shawl (#d9a441), apron",
     "seed": 900201,
     "steps": 28,
     "genSize": {
@@ -19,6 +19,6 @@
     "flip": false,
     "pixelate": 1
   },
-  "sourceUrl": "https://v3b.fal.media/files/b/0aa20135/4AJLqYWsZ00K3TYRef2_7_AjPJCLDp.png",
-  "generatedAt": "2026-07-12T21:50:12.766Z"
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa201a0/YGCZGFk8l3jHgtPr597xO_bv6o8ZbP.png",
+  "generatedAt": "2026-07-12T22:08:10.878Z"
 }

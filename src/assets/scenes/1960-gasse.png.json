@@ -3,8 +3,8 @@
     "key": "1960-gasse",
     "type": "scene",
     "model": "fal-ai/flux/dev",
-    "prompt": "fine pixel art, 16-bit hi-bit style, point-and-click adventure game background, in the style of classic SCUMM adventures, painterly dithering, muted palette, moody theatrical night lighting, wide shot at street level, empty scene, no people, no animals, no text, no watermark. East German town Eberswalde in 1960, GDR era, neon signs, concrete, cranes and quiet optimism. narrow old alley at night, brick houses with crumbling plaster, single electric street lamp, bicycles leaning on the wall",
-    "seed": 196004,
+    "prompt": "fine pixel art, 16-bit hi-bit style, point-and-click adventure game background, in the style of classic SCUMM adventures, painterly dithering, muted palette, moody theatrical night lighting, flat side-on view like a theater stage set, building facades parallel to the picture plane, street running level across the bottom edge, seen straight-on from across the street, empty scene, no people, no animals, no text, no watermark. East German town Eberswalde in 1960, GDR era, neon signs, concrete, cranes and quiet optimism. row of old brick house fronts with crumbling plaster facing the viewer along a narrow lane, single electric street lamp, bicycles leaning against the walls",
+    "seed": 196104,
     "steps": 28,
     "genSize": {
       "width": 1024,
@@ -19,6 +19,6 @@
     "flip": false,
     "pixelate": 1
   },
-  "sourceUrl": "https://v3b.fal.media/files/b/0aa20133/IPyuaJky2pHph0Fmc8aDp.png",
-  "generatedAt": "2026-07-12T21:50:02.605Z"
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa201b1/BKQMq7Od1LtUqirtvVZtl.png",
+  "generatedAt": "2026-07-12T22:08:59.223Z"
 }

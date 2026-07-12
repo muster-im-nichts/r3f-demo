@@ -8,6 +8,13 @@
  *   npm run generate-art -- --force --type scene  # Szenen neu generieren
  *   npm run generate-art -- --model schnell       # billige Iteration
  *   npm run generate-art -- --keep-raw            # Rohbilder archivieren
+ *   npm run generate-art -- --audition 4          # Kandidaten-Casting
+ *
+ * --audition n generiert je Charakter n Seed-Varianten (Manifest-Seed
+ * + k*1000) nach scripts/.art-cache/auditions/{key}/{seed}.png — ohne
+ * die Assets oder Sidecars anzufassen. flip/pixelate werden dabei
+ * ignoriert (Roh-Orientierung beurteilen, Overrides erst beim Festlegen
+ * des Gewinner-Seeds im Manifest setzen).
  *
  * Liest den Key aus .env / .env.local (FAL_KEY — bewusst ohne VITE_-Präfix,
  * der Key darf nie ins Client-Bundle). Quelle der Wahrheit für Prompts und
@@ -48,7 +55,7 @@ const POLL_TIMEOUT_MS = 120000
 // --- CLI -------------------------------------------------------------------
 
 const argv = process.argv.slice(2)
-const flags = { only: [], force: false, dryRun: false, model: 'dev', type: null, keepRaw: false }
+const flags = { only: [], force: false, dryRun: false, model: 'dev', type: null, keepRaw: false, audition: 0 }
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i]
   if (a === '--only') flags.only.push(argv[++i])
@@ -57,6 +64,7 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--model') flags.model = argv[++i]
   else if (a === '--type') flags.type = argv[++i]
   else if (a === '--keep-raw') flags.keepRaw = true
+  else if (a === '--audition') flags.audition = Number(argv[++i])
   else {
     console.error(`Unbekanntes Argument: ${a}`)
     process.exit(1)
@@ -314,17 +322,39 @@ async function generateAsset(job) {
   }
 
   writeFileSync(job.target, processed)
-  writeFileSync(
-    new URL(`${job.target.href}.json`),
-    JSON.stringify({ params: fingerprint(job), sourceUrl, generatedAt: new Date().toISOString() }, null, 2) + '\n',
-  )
+  if (!job.audition) {
+    writeFileSync(
+      new URL(`${job.target.href}.json`),
+      JSON.stringify({ params: fingerprint(job), sourceUrl, generatedAt: new Date().toISOString() }, null, 2) + '\n',
+    )
+  }
 }
 
 // --- Ablauf --------------------------------------------------------------------
 
-const jobs = buildJobs()
+let jobs = buildJobs()
   .filter(j => !flags.type || j.type === flags.type)
   .filter(j => flags.only.length === 0 || flags.only.includes(j.key))
+
+if (flags.audition > 0) {
+  // Casting: je Charakter n Seed-Varianten in den Cache, Assets unberührt
+  jobs = jobs
+    .filter(j => j.type === 'character')
+    .flatMap(job =>
+      Array.from({ length: flags.audition }, (_, k) => {
+        const seed = job.seed + k * 1000
+        return {
+          ...job,
+          seed,
+          flip: false,
+          pixelate: 1,
+          audition: true,
+          target: new URL(`./.art-cache/auditions/${job.key}/${seed}.png`, import.meta.url),
+        }
+      }),
+    )
+  for (const job of jobs) mkdirSync(new URL('.', job.target), { recursive: true })
+}
 
 if (flags.only.length) {
   const known = new Set(jobs.map(j => j.key))

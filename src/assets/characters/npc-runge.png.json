@@ -3,7 +3,7 @@
     "key": "npc-runge",
     "type": "character",
     "model": "fal-ai/flux/dev",
-    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, standing idle in relaxed pose, three-quarter view facing right, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. dignified old master clockmaker, fine dark purple coat (#4a3a5a), golden watch chain (#d9a441) across the vest, white hair, spectacles",
+    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, in the style of classic SCUMM adventures, standing idle in relaxed pose, three-quarter view facing right, natural realistic body proportions, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. dignified old master clockmaker, fine dark purple coat (#4a3a5a), golden watch chain (#d9a441) across the vest, white hair, spectacles",
     "seed": 900114,
     "steps": 28,
     "genSize": {
@@ -19,6 +19,6 @@
     "flip": false,
     "pixelate": 1
   },
-  "sourceUrl": "https://v3b.fal.media/files/b/0aa20137/qdgpIIYwy-Ha3WCFZauZq_l9sNDf3m.png",
-  "generatedAt": "2026-07-12T21:50:42.044Z"
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa201a3/nlsceSzlNtSoaguTnmKOx_xFQnn3PV.png",
+  "generatedAt": "2026-07-12T22:08:39.713Z"
 }

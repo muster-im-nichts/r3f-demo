@@ -3,7 +3,7 @@
     "key": "npc-schaffner",
     "type": "character",
     "model": "fal-ai/flux/dev",
-    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, standing idle in relaxed pose, three-quarter view facing right, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. punctilious railway conductor, dark blue uniform (#26456b) with cap, red signal flag (#d94040) tucked in his belt, pocket watch",
+    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, in the style of classic SCUMM adventures, standing idle in relaxed pose, three-quarter view facing right, natural realistic body proportions, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. punctilious railway conductor, dark blue uniform (#26456b) with cap, red signal flag (#d94040) tucked in his belt, pocket watch",
     "seed": 900207,
     "steps": 28,
     "genSize": {
@@ -17,8 +17,8 @@
     "colors": null,
     "kernel": "lanczos3",
     "flip": false,
-    "pixelate": 2
+    "pixelate": 1
   },
-  "sourceUrl": "https://v3b.fal.media/files/b/0aa20136/p8aGIYGjnaf3GqV3wuEZd_ZhBCyDGQ.png",
-  "generatedAt": "2026-07-12T21:50:25.833Z"
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa201a2/4I-PoVZEWXf-7go0IbYsY_AjFg8k2D.png",
+  "generatedAt": "2026-07-12T22:08:28.604Z"
 }

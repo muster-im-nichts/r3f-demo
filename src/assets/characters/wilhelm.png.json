@@ -20,11 +20,15 @@
     "pixelate": 1
   },
   "judged": {
-    "facing": null,
-    "votes": [],
+    "facing": "right",
+    "votes": [
+      "right",
+      "right",
+      "right"
+    ],
     "model": "google/gemini-2.5-flash",
     "flipped": false
   },
-  "sourceUrl": "https://v3b.fal.media/files/b/0aa2032a/CCQmn-xSW4Hsaxf736PvR_TxD70EOR.png",
-  "generatedAt": "2026-07-12T23:13:49.373Z"
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20374/mktxbQMmhfJvuTQB3oaO8_S2VAMcVF.png",
+  "generatedAt": "2026-07-12T23:26:22.547Z"
 }

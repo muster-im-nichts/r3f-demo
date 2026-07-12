@@ -65,7 +65,8 @@ const RAW_DIR = new URL('./.art-cache/', import.meta.url)
 const CONCURRENCY = 3
 const RETRIES = 3
 const POLL_INTERVAL_MS = 1000
-const POLL_TIMEOUT_MS = 120000
+// Großzügig: nach einem Top-up arbeitet die fal-Queue erst Job-Rückstau ab
+const POLL_TIMEOUT_MS = 300000
 
 // --- CLI -------------------------------------------------------------------
 
@@ -190,13 +191,34 @@ function isFresh(job) {
 
 // --- fal.ai Queue-REST -------------------------------------------------------
 
-/** Konto gesperrt (Guthaben leer): sofort alles abbrechen statt in Timeouts zu laufen */
+/**
+ * Konto laut fal gesperrt (Guthaben leer). Achtung: fal meldet das auch
+ * sporadisch als Falschmeldung kurz nach Top-up/Abrechnung — deshalb wird
+ * eine Sperre wie ein transienter Fehler mit langem Backoff wiederholt
+ * und erst als echt behandelt, wenn sie über alle Versuche bestehen bleibt.
+ */
 let accountLocked = false
+const LOCK_BACKOFF_MS = 15000
+
+/**
+ * Drossel: fal meldet unter Burst-Last (3 Worker × Flux/BiRefNet/Richter)
+ * sporadisch Kontosperren, die eher ein Rate-/Abrechnungslimit sind.
+ * Kostende Aufrufe (POST) halten deshalb globalen Mindestabstand;
+ * Status-Polls (GET) bleiben ungedrosselt.
+ */
+const REQUEST_GAP_MS = 3000
+let nextRequestAt = 0
+async function throttle() {
+  const wait = nextRequestAt - Date.now()
+  nextRequestAt = Math.max(nextRequestAt, Date.now()) + REQUEST_GAP_MS
+  if (wait > 0) await new Promise(r => setTimeout(r, wait))
+}
 
 async function falFetch(url, init) {
   let lastError
   for (let attempt = 1; attempt <= RETRIES; attempt++) {
     if (accountLocked) throw Object.assign(new Error('fal-Guthaben aufgebraucht'), { fatal: true })
+    if (init?.method === 'POST') await throttle()
     try {
       const res = await fetch(url, {
         ...init,
@@ -206,8 +228,13 @@ async function falFetch(url, init) {
       if (!res.ok) {
         const body = await res.text()
         if (body.includes('Exhausted balance') || body.includes('User is locked')) {
-          accountLocked = true
-          throw Object.assign(new Error('fal-Guthaben aufgebraucht'), { fatal: true })
+          if (attempt === RETRIES) {
+            accountLocked = true
+            throw Object.assign(new Error('fal-Guthaben aufgebraucht (Sperre blieb über alle Versuche bestehen)'), { fatal: true })
+          }
+          console.warn(`  fal meldet Kontosperre — warte ${LOCK_BACKOFF_MS / 1000}s und versuche erneut (${attempt}/${RETRIES})`)
+          await new Promise(r => setTimeout(r, LOCK_BACKOFF_MS))
+          continue
         }
         throw Object.assign(new Error(`HTTP ${res.status}: ${body.slice(0, 300)}`), { fatal: true })
       }

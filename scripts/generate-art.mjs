@@ -12,9 +12,15 @@
  *
  * --audition n generiert je Charakter n Seed-Varianten (Manifest-Seed
  * + k*1000) nach scripts/.art-cache/auditions/{key}/{seed}.png — ohne
- * die Assets oder Sidecars anzufassen. flip/pixelate werden dabei
- * ignoriert (Roh-Orientierung beurteilen, Overrides erst beim Festlegen
- * des Gewinner-Seeds im Manifest setzen).
+ * die Assets oder Sidecars anzufassen. Manifest-flip/pixelate werden
+ * dabei ignoriert; der Blick-Richter läuft aber auch hier, Kandidaten
+ * erscheinen also bereits in End-Orientierung (Blick nach rechts).
+ *
+ * Blick-Richter (Standard an, --no-judge schaltet ab): ein günstiges
+ * VLM über fal (any-llm, Mehrheit aus 3 Stimmen) prüft je Figur die
+ * Blickrichtung des Kopfes; bei "left" wird automatisch gespiegelt
+ * (Basis-Blickrichtung im Spiel ist rechts). Explizites flip im
+ * Manifest gewinnt — dann wird nicht juriert. Urteil landet im Sidecar.
  *
  * Liest den Key aus .env / .env.local (FAL_KEY — bewusst ohne VITE_-Präfix,
  * der Key darf nie ins Client-Bundle). Quelle der Wahrheit für Prompts und
@@ -34,8 +40,17 @@ import { STYLE, EPOCH_CONTEXT, SCENES, CHARACTERS } from './art-manifest.mjs'
 // --- Konfiguration ---------------------------------------------------------
 
 const QUEUE_BASE = 'https://queue.fal.run'
+const SYNC_BASE = 'https://fal.run'
 const FLUX_MODELS = { dev: 'fal-ai/flux/dev', schnell: 'fal-ai/flux/schnell' }
 const REMBG_MODEL = 'fal-ai/birefnet/v2'
+// Blick-Richter: günstiges VLM über fal (any-llm), 3 Stimmen Mehrheitsentscheid
+const JUDGE_ENDPOINT = 'fal-ai/any-llm/vision'
+const JUDGE_MODEL = 'google/gemini-2.5-flash'
+const JUDGE_VOTES = 3
+const JUDGE_PROMPT =
+  'This is a video game character sprite. In which horizontal direction does the character LOOK — ' +
+  'where does their nose/gaze point? Ignore the body, judge only the head. ' +
+  'Reply with exactly one word: "left", "right" or "front".'
 
 const SCENE_GEN_SIZE = { width: 1024, height: 576 }
 const SCENE_OUT_SIZE = { width: 480, height: 270 }
@@ -55,7 +70,7 @@ const POLL_TIMEOUT_MS = 120000
 // --- CLI -------------------------------------------------------------------
 
 const argv = process.argv.slice(2)
-const flags = { only: [], force: false, dryRun: false, model: 'dev', type: null, keepRaw: false, audition: 0 }
+const flags = { only: [], force: false, dryRun: false, model: 'dev', type: null, keepRaw: false, audition: 0, judge: true }
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i]
   if (a === '--only') flags.only.push(argv[++i])
@@ -65,6 +80,7 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--type') flags.type = argv[++i]
   else if (a === '--keep-raw') flags.keepRaw = true
   else if (a === '--audition') flags.audition = Number(argv[++i])
+  else if (a === '--no-judge') flags.judge = false
   else {
     console.error(`Unbekanntes Argument: ${a}`)
     process.exit(1)
@@ -126,6 +142,8 @@ function buildJobs() {
       outSize: SPRITE_OUT_SIZE,
       kernel: c.kernel ?? 'lanczos3',
       flip: c.flip ?? false,
+      // Explizites flip im Manifest ist Handkuration — der Richter schweigt dann
+      flipExplicit: c.flip !== undefined,
       pixelate: c.pixelate ?? 1,
       target: new URL(`${c.key}.png`, CHARS_DIR),
     })
@@ -238,6 +256,31 @@ async function download(url) {
   return Buffer.from(await res.arrayBuffer())
 }
 
+/**
+ * Blickrichtung jurieren: 'left' | 'right' | 'front'. Mehrheit aus
+ * JUDGE_VOTES Aufrufen; unklare Antworten zählen nicht. Liefert null,
+ * wenn keine Mehrheit zustande kommt (dann wird nicht geflippt).
+ */
+async function judgeFacing(imageUrl) {
+  const votes = []
+  for (let i = 0; i < JUDGE_VOTES; i++) {
+    try {
+      const json = await falFetch(`${SYNC_BASE}/${JUDGE_ENDPOINT}`, {
+        method: 'POST',
+        body: JSON.stringify({ model: JUDGE_MODEL, prompt: JUDGE_PROMPT, image_url: imageUrl }),
+      })
+      const word = (json.output ?? '').toLowerCase().match(/left|right|front/)?.[0]
+      if (word) votes.push(word)
+    } catch (err) {
+      console.warn(`  Richter-Aufruf fehlgeschlagen: ${err.message.slice(0, 120)}`)
+    }
+  }
+  const counts = {}
+  for (const v of votes) counts[v] = (counts[v] ?? 0) + 1
+  const [winner, n] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] ?? []
+  return n > JUDGE_VOTES / 2 ? { facing: winner, votes } : { facing: null, votes }
+}
+
 // --- Post-Processing (sharp) -------------------------------------------------
 
 /** Szene: Downscale + harte Palettenquantisierung → hi-bit Pixel-Look. */
@@ -308,12 +351,23 @@ async function generateAsset(job) {
   const sourceUrl = job.type === 'character' ? await removeBackground(fluxUrl) : fluxUrl
   const raw = await download(sourceUrl)
 
+  // Blick-Richter: Basis-Blickrichtung im Spiel ist rechts; blickt die
+  // Figur laut VLM-Mehrheit nach links, wird gespiegelt. Der effektive
+  // Flip bleibt vom Manifest-Flip getrennt (der steckt im Fingerprint).
+  let judged = null
+  let flip = job.flip
+  if (job.type === 'character' && flags.judge && !job.flipExplicit) {
+    judged = await judgeFacing(sourceUrl)
+    if (judged.facing === 'left') flip = true
+  }
+
   if (flags.keepRaw) {
     mkdirSync(RAW_DIR, { recursive: true })
     writeFileSync(new URL(`${job.key}.png`, RAW_DIR), raw)
   }
 
-  const processed = job.type === 'scene' ? await processScene(job, raw) : await processSprite(job, raw)
+  const processed =
+    job.type === 'scene' ? await processScene(job, raw) : await processSprite({ ...job, flip }, raw)
 
   // Zielmaße validieren, bevor irgendwas geschrieben wird
   const meta = await sharp(processed).metadata()
@@ -325,7 +379,16 @@ async function generateAsset(job) {
   if (!job.audition) {
     writeFileSync(
       new URL(`${job.target.href}.json`),
-      JSON.stringify({ params: fingerprint(job), sourceUrl, generatedAt: new Date().toISOString() }, null, 2) + '\n',
+      JSON.stringify(
+        {
+          params: fingerprint(job),
+          ...(judged && { judged: { ...judged, model: JUDGE_MODEL, flipped: flip } }),
+          sourceUrl,
+          generatedAt: new Date().toISOString(),
+        },
+        null,
+        2,
+      ) + '\n',
     )
   }
 }
@@ -347,6 +410,7 @@ if (flags.audition > 0) {
           ...job,
           seed,
           flip: false,
+          flipExplicit: false,
           pixelate: 1,
           audition: true,
           target: new URL(`./.art-cache/auditions/${job.key}/${seed}.png`, import.meta.url),

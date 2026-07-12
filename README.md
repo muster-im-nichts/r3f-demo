@@ -107,6 +107,19 @@ FAL_KEY=…
 - `-- --force`, `-- --type scene|character` — neu generieren / filtern
 - `-- --model schnell` — billige Flux-Schnell-Iteration statt flux/dev
 - `-- --keep-raw` — Rohbilder unter `scripts/.art-cache/` archivieren
+- `-- --audition 4` — Casting: je Figur n Seed-Kandidaten in den Cache
+- `-- --no-judge` — Blick-Richter abschalten
+
+**Blick-Richter:** Jede generierte Figur wird von einem günstigen
+Vision-Modell über fal (any-llm, Mehrheit aus 3 Stimmen) auf ihre
+Blickrichtung geprüft; blickt sie nach links, wird automatisch
+gespiegelt (Basis-Blickrichtung im Spiel ist rechts). Ein explizites
+`flip` im Manifest gewinnt; das Urteil steht im Sidecar.
+
+**Asset-Viewer:** `npm run dev`, dann http://localhost:5173/viewer.html —
+zeigt alle Figuren (mit Seed, Flip-Zustand, Richter-Urteil, Spiegel-
+Vorschau und lokalen Audition-Versionen) und alle Kulissen nach Epoche
+(mit Seed und Prompt).
 
 Quelle der Wahrheit ist `scripts/art-manifest.mjs`: pro Asset ein Prompt
 und ein **fester Seed** — Kuration heißt, den Seed (oder Prompt) im

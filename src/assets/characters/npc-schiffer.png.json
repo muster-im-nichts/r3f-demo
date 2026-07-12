@@ -1,0 +1,24 @@
+{
+  "params": {
+    "key": "npc-schiffer",
+    "type": "character",
+    "model": "fal-ai/flux/dev",
+    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, standing idle in relaxed pose, three-quarter view facing right, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. old barge skipper with white hair and beard stubble, dark teal oilskin jacket (#2e4a5a), flat cap, broad build, pipe",
+    "seed": 900113,
+    "steps": 28,
+    "genSize": {
+      "width": 640,
+      "height": 960
+    },
+    "outSize": {
+      "width": 128,
+      "height": 192
+    },
+    "colors": null,
+    "kernel": "lanczos3",
+    "flip": false,
+    "pixelate": 1
+  },
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20137/XHx8XcjRXJ52lOAtnE5Cz_kO9wCKYV.png",
+  "generatedAt": "2026-07-12T21:50:35.968Z"
+}

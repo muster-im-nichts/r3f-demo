@@ -1,0 +1,24 @@
+{
+  "params": {
+    "key": "1860-bahnhof",
+    "type": "scene",
+    "model": "fal-ai/flux/dev",
+    "prompt": "fine pixel art, 16-bit hi-bit style, point-and-click adventure game background, in the style of classic SCUMM adventures, painterly dithering, muted palette, moody theatrical night lighting, wide shot at street level, empty scene, no people, no animals, no text, no watermark. German town Eberswalde in 1860, early industrial age, gas lanterns, railway smoke, brick buildings. small railway station platform at night, steam locomotive with glowing firebox, gas lamps, luggage carts, smoke and fog",
+    "seed": 186002,
+    "steps": 28,
+    "genSize": {
+      "width": 1024,
+      "height": 576
+    },
+    "outSize": {
+      "width": 480,
+      "height": 270
+    },
+    "colors": 64,
+    "kernel": "lanczos3",
+    "flip": false,
+    "pixelate": 1
+  },
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20132/Nwq7WJpkOBjO92Sbl0oST.png",
+  "generatedAt": "2026-07-12T21:49:50.852Z"
+}

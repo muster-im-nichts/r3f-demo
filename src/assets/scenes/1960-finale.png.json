@@ -1,0 +1,24 @@
+{
+  "params": {
+    "key": "1960-finale",
+    "type": "scene",
+    "model": "fal-ai/flux/dev",
+    "prompt": "fine pixel art, 16-bit hi-bit style, point-and-click adventure game background, in the style of classic SCUMM adventures, painterly dithering, muted palette, moody dim interior lighting, wide interior shot at eye level, room seen from inside, empty room, no people, no animals, no text, no watermark. East German town Eberswalde in 1960, GDR era, neon signs, concrete, cranes and quiet optimism. factory storage hall interior at night, steel shelves with crates, blueprint cabinets, single work lamp, long shadows",
+    "seed": 196005,
+    "steps": 28,
+    "genSize": {
+      "width": 1024,
+      "height": 576
+    },
+    "outSize": {
+      "width": 480,
+      "height": 270
+    },
+    "colors": 64,
+    "kernel": "lanczos3",
+    "flip": false,
+    "pixelate": 1
+  },
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20134/rGlAoAvGoTG2CKWCnbqE7.png",
+  "generatedAt": "2026-07-12T21:50:04.360Z"
+}

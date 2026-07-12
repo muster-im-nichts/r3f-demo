@@ -1,0 +1,24 @@
+{
+  "params": {
+    "key": "npc-wache",
+    "type": "character",
+    "model": "fal-ai/flux/dev",
+    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, standing idle in relaxed pose, three-quarter view facing right, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. stern town guard, broad shouldered, dark blue uniform coat (#2e4a6b) with brass-yellow trim (#d9a441), tall hat, dark moustache",
+    "seed": 900103,
+    "steps": 28,
+    "genSize": {
+      "width": 640,
+      "height": 960
+    },
+    "outSize": {
+      "width": 128,
+      "height": 192
+    },
+    "colors": null,
+    "kernel": "lanczos3",
+    "flip": false,
+    "pixelate": 1
+  },
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20135/r4oJCg8bKXXaDgXM-W1pU_su11LxH9.png",
+  "generatedAt": "2026-07-12T21:50:19.059Z"
+}

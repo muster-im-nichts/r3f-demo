@@ -1,0 +1,24 @@
+{
+  "params": {
+    "key": "1760-marktplatz",
+    "type": "scene",
+    "model": "fal-ai/flux/dev",
+    "prompt": "fine pixel art, 16-bit hi-bit style, point-and-click adventure game background, in the style of classic SCUMM adventures, painterly dithering, muted palette, moody theatrical night lighting, wide shot at street level, empty scene, no people, no animals, no text, no watermark. Prussian small town Eberswalde in 1760, timber-framed houses, candlelight and lanterns, cobblestones. market square at night, wooden market stalls with canvas roofs, church tower silhouette, warm lantern glow on cobblestones",
+    "seed": 176001,
+    "steps": 28,
+    "genSize": {
+      "width": 1024,
+      "height": 576
+    },
+    "outSize": {
+      "width": 480,
+      "height": 270
+    },
+    "colors": 64,
+    "kernel": "lanczos3",
+    "flip": false,
+    "pixelate": 1
+  },
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20131/51DAiv7tJxwh2ZFAwwq1q.png",
+  "generatedAt": "2026-07-12T21:49:42.346Z"
+}

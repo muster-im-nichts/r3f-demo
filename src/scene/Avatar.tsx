@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { CanvasTexture, DoubleSide, MathUtils, Vector3, type Group, type Mesh } from 'three'
-import { spriteTexture, SPRITE_ASPECT } from './sprites'
+import { SPRITE_ASPECT } from './sprites'
+import { useCharacterTexture } from './characterTextures'
 import { MOVE_KEYS, moveInput } from './moveKeys'
 import { getColliders, stageSqueeze } from './propSets'
 import { avatarPos, cameraCut } from './avatarState'
@@ -87,7 +88,7 @@ export function Avatar({
   onWalkInterrupt?: (stage: 'out' | 'in') => void
 }) {
   const mesh = useRef<Mesh>(null)
-  const texture = spriteTexture(character)
+  const texture = useCharacterTexture(character)
   // Auf schmalen Screens (Hochformat) rückt der Avatar Richtung Mitte,
   // sonst steht er außerhalb des Sichtfelds
   const viewportWidth = useThree(s => s.viewport.width)

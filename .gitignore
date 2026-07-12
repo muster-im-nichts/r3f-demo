@@ -12,9 +12,12 @@ dist
 dist-ssr
 *.local
 
-# API-Keys (ElevenLabs u.a.)
+# API-Keys (ElevenLabs, fal.ai u.a.)
 .env
 .env.*
+
+# Rohbilder der Art-Pipeline (npm run generate-art -- --keep-raw)
+scripts/.art-cache/
 
 # Editor directories and files
 .vscode/*

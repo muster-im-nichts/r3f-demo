@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "check-voices": "node scripts/check-voices.mjs"
+    "check-voices": "node scripts/check-voices.mjs",
+    "generate-art": "node scripts/generate-art.mjs"
   },
   "dependencies": {
     "@fontsource/press-start-2p": "^5.2.7",
@@ -26,6 +27,7 @@
     "@types/three": "^0.185.0",
     "@vitejs/plugin-react": "^6.0.3",
     "oxlint": "^1.71.0",
+    "sharp": "^0.34.5",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   }

@@ -2,7 +2,7 @@ import { useState, type CSSProperties, type ReactNode } from 'react'
 import { CHARACTERS } from '../game/characters'
 import { EPOCHS } from '../game/epochs'
 import { GENRES } from '../game/campaigns'
-import { spritePreviewUrl } from '../scene/sprites'
+import { characterPreviewUrl } from '../scene/characterTextures'
 import type { CharacterId, EpochId, GameSetup, GenreId } from '../game/types'
 import { getCharacter } from '../game/characters'
 
@@ -96,7 +96,7 @@ export function StartScreen({ onStart }: { onStart: (setup: GameSetup) => void }
               onClick={() => setCharacterId(c.id)}
             >
               <img
-                src={spritePreviewUrl(c)}
+                src={characterPreviewUrl(c)}
                 alt={c.name}
                 style={{ height: '64px', imageRendering: 'pixelated', display: 'block', margin: '0 auto 6px' }}
               />

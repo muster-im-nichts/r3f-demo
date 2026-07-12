@@ -1,0 +1,24 @@
+{
+  "params": {
+    "key": "npc-karl",
+    "type": "character",
+    "model": "fal-ai/flux/dev",
+    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, standing idle in relaxed pose, three-quarter view facing right, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. nervous young apprentice, sandy-red hair (#c98a3a), plain drab work coat (#8a7a5a), distinctive green neckerchief (#3f8a5a), slight build",
+    "seed": 900102,
+    "steps": 28,
+    "genSize": {
+      "width": 640,
+      "height": 960
+    },
+    "outSize": {
+      "width": 128,
+      "height": 192
+    },
+    "colors": null,
+    "kernel": "lanczos3",
+    "flip": false,
+    "pixelate": 1
+  },
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20141/HTXdbZ7qj1x7-ZgKcxROC_L8XM00GT.png",
+  "generatedAt": "2026-07-12T21:50:18.465Z"
+}

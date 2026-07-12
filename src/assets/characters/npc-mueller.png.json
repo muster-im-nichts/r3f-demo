@@ -1,0 +1,24 @@
+{
+  "params": {
+    "key": "npc-mueller",
+    "type": "character",
+    "model": "fal-ai/flux/dev",
+    "prompt": "fine pixel art, 16-bit hi-bit style, full-body adventure game character sprite, standing idle in relaxed pose, three-quarter view facing right, whole figure visible from head to feet, feet at the bottom edge, centered, plain flat light grey background, no text, no watermark. old sturdy miller with white hair, pale flour-dusted clothes (#cfc4ae), brown trousers (#6b5a42), rolled-up sleeves, good-natured face",
+    "seed": 900105,
+    "steps": 28,
+    "genSize": {
+      "width": 640,
+      "height": 960
+    },
+    "outSize": {
+      "width": 128,
+      "height": 192
+    },
+    "colors": null,
+    "kernel": "lanczos3",
+    "flip": false,
+    "pixelate": 1
+  },
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20136/EReNQ7dgF3WCdrYNd1RH1_tdYvOhUv.png",
+  "generatedAt": "2026-07-12T21:50:24.411Z"
+}

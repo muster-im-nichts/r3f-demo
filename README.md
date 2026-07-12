@@ -85,4 +85,31 @@ in Produktion gehört ein kleiner Proxy davor.
 Echte Hintergründe (Pixel-Art, 16:9) einfach unter `src/assets/scenes/`
 ablegen — Namensschema und aktuell verwendete Szenen-Keys stehen in
 `src/assets/scenes/README.md`. Ohne Bild generiert die App automatisch
-einen stimmungsvollen Platzhalter.
+einen stimmungsvollen Platzhalter. Charakter-Sprites funktionieren genauso
+(`src/assets/characters/{id}.png`, siehe README dort); ohne Datei greift
+der prozedurale Pixel-Platzhalter.
+
+## KI-Artwork (fal.ai)
+
+Szenen und Figuren erzeugt die Pipeline `npm run generate-art` über
+fal.ai (Flux + BiRefNet-Freistellung) und bereitet sie als feines
+Pixel-Art auf (Szenen 480×270, Sprites 128×192 mit binärem Alpha).
+Dazu in der `.env` einen Key ergänzen (ohne `VITE_`-Präfix — der Key
+bleibt im Build-Script und landet nie im Client-Bundle):
+
+```
+FAL_KEY=…
+```
+
+- `npm run generate-art` — generiert alles Fehlende/Veraltete
+- `-- --dry-run` — zeigt nur Prompts, Seeds und Zielpfade
+- `-- --only greta --only 1760-marktplatz` — einzelne Assets
+- `-- --force`, `-- --type scene|character` — neu generieren / filtern
+- `-- --model schnell` — billige Flux-Schnell-Iteration statt flux/dev
+- `-- --keep-raw` — Rohbilder unter `scripts/.art-cache/` archivieren
+
+Quelle der Wahrheit ist `scripts/art-manifest.mjs`: pro Asset ein Prompt
+und ein **fester Seed** — Kuration heißt, den Seed (oder Prompt) im
+Manifest zu ändern und zu committen; die Pipeline erkennt die Abweichung
+über die Sidecar-Dateien (`{name}.png.json`) und generiert nur diese
+Assets neu. PNGs und Sidecars werden mitcommittet (Build-Input).

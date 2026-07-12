@@ -1,7 +1,8 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { DoubleSide, MathUtils, Vector3, type Group, type Mesh } from 'three'
-import { spriteTexture, labelTexture, SPRITE_ASPECT } from './sprites'
+import { labelTexture, SPRITE_ASPECT } from './sprites'
+import { useCharacterTexture } from './characterTextures'
 import { avatarPos } from './avatarState'
 import type { NpcSpec } from '../game/npcs'
 
@@ -18,7 +19,7 @@ const worldPos = new Vector3()
 export function NpcFigure({ npc, facing }: { npc: NpcSpec; facing?: 1 | -1 | null }) {
   const mesh = useRef<Mesh>(null)
   const flip = useRef<Group>(null)
-  const texture = spriteTexture(npc)
+  const texture = useCharacterTexture(npc)
   const label = labelTexture(npc.name)
   const height = BASE_HEIGHT * (npc.scale ?? 1)
   const width = height * SPRITE_ASPECT

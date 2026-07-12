@@ -10,9 +10,11 @@ import {
   resolveText,
   type Segment,
 } from './game/engine'
+import { CHARACTERS } from './game/characters'
 import { NPCS } from './game/npcs'
 import { sceneLabel } from './game/scenes'
 import { preloadScenes } from './scene/textures'
+import { preloadCharacters } from './scene/characterTextures'
 import { Stage } from './scene/Stage'
 import { StartScreen } from './ui/StartScreen'
 import { AdventureBox } from './ui/AdventureBox'
@@ -81,6 +83,9 @@ export default function App() {
           startMusic()
           const campaign = getCampaign(next.epoch, next.genre)
           preloadScenes(next.epoch, collectScenes(campaign))
+          // Alle Figuren vorladen — NPCs treten auf Stichwort mitten in
+          // der Szene auf, da darf kein Suspense-Blip entstehen
+          preloadCharacters([...CHARACTERS, ...Object.values(NPCS)])
           setSetup(next)
           setPhase({ kind: 'playing', nodeId: campaign.start })
         }}

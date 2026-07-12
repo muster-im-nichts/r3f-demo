@@ -1,8 +1,10 @@
 # Szenenbilder
 
-Hier liegen die Matte-Painting-Hintergründe der Bühne (PNG, ideal 16:9,
-z.B. 1920x1080 — der Pixel-Look kommt über NearestFilter, also gern auch
-kleiner wie 480x270).
+Hier liegen die Matte-Painting-Hintergründe der Bühne (PNG, 16:9).
+Erzeugt werden sie von der KI-Pipeline `npm run generate-art`
+(480x270, Prompts und Seeds in `scripts/art-manifest.mjs`, Sidecar
+`{name}.png.json` mitcommitten) — handgemachte Bilder funktionieren
+genauso, der Pixel-Look kommt über NearestFilter.
 
 ## Namensschema
 

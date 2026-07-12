@@ -23,11 +23,12 @@
     "facing": "right",
     "votes": [
       "right",
-      "right"
+      "right",
+      "left"
     ],
     "model": "google/gemini-2.5-flash",
     "flipped": false
   },
-  "sourceUrl": "https://v3b.fal.media/files/b/0aa202d0/Z6uSEN7_eIULqwT_633lN_gr0h8Dgy.png",
-  "generatedAt": "2026-07-12T22:56:55.896Z"
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20342/_e04YpRL7vRVX1n6tbqp-_zJAJ207r.png",
+  "generatedAt": "2026-07-12T23:17:47.195Z"
 }

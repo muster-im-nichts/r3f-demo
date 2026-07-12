@@ -19,6 +19,12 @@
     "flip": false,
     "pixelate": 1
   },
-  "sourceUrl": "https://v3b.fal.media/files/b/0aa201ad/c9mI4cTojA620nKxdlBIc_4iqW5XdD.png",
-  "generatedAt": "2026-07-12T22:08:16.833Z"
+  "judged": {
+    "facing": null,
+    "votes": [],
+    "model": "google/gemini-2.5-flash",
+    "flipped": false
+  },
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa2032a/Tcv9DeBoq-NKltHtSwWtC_mskVGvAf.png",
+  "generatedAt": "2026-07-12T23:13:49.592Z"
 }

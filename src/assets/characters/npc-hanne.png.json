@@ -21,13 +21,10 @@
   },
   "judged": {
     "facing": null,
-    "votes": [
-      "front",
-      "left"
-    ],
+    "votes": [],
     "model": "google/gemini-2.5-flash",
     "flipped": false
   },
-  "sourceUrl": "https://v3b.fal.media/files/b/0aa202d7/ljxU9Md-ktY__xK4CMvx0_OVP500Cr.png",
-  "generatedAt": "2026-07-12T22:59:56.695Z"
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20342/BbpVnrtXUg5zCs4lydLOO_w7CaO2iC.png",
+  "generatedAt": "2026-07-12T23:17:52.437Z"
 }

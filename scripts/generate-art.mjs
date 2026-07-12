@@ -173,7 +173,16 @@ function isFresh(job) {
   if (!existsSync(job.target)) return false
   try {
     const sidecar = JSON.parse(readFileSync(new URL(`${job.target.href}.json`), 'utf8'))
-    return JSON.stringify(sidecar.params) === JSON.stringify(fingerprint(job))
+    if (JSON.stringify(sidecar.params) !== JSON.stringify(fingerprint(job))) return false
+    // Figur ohne (erfolgreiches) Richter-Urteil — z.B. weil das Guthaben
+    // mittendrin ausging — gilt als veraltet, damit ein normaler Lauf sie
+    // nachjuriert. Bewusst nicht bei explizitem Manifest-flip (kein Urteil
+    // nötig) und nicht bei "unklar trotz Stimmen" (sonst Endlosschleife).
+    if (job.type === 'character' && flags.judge && !job.flipExplicit) {
+      const j = sidecar.judged
+      if (!j || (j.facing === null && (j.votes?.length ?? 0) === 0)) return false
+    }
+    return true
   } catch {
     return false // Sidecar fehlt/kaputt → als veraltet behandeln
   }
@@ -181,9 +190,13 @@ function isFresh(job) {
 
 // --- fal.ai Queue-REST -------------------------------------------------------
 
+/** Konto gesperrt (Guthaben leer): sofort alles abbrechen statt in Timeouts zu laufen */
+let accountLocked = false
+
 async function falFetch(url, init) {
   let lastError
   for (let attempt = 1; attempt <= RETRIES; attempt++) {
+    if (accountLocked) throw Object.assign(new Error('fal-Guthaben aufgebraucht'), { fatal: true })
     try {
       const res = await fetch(url, {
         ...init,
@@ -192,6 +205,10 @@ async function falFetch(url, init) {
       if (res.status >= 500 || res.status === 429) throw new Error(`HTTP ${res.status}`)
       if (!res.ok) {
         const body = await res.text()
+        if (body.includes('Exhausted balance') || body.includes('User is locked')) {
+          accountLocked = true
+          throw Object.assign(new Error('fal-Guthaben aufgebraucht'), { fatal: true })
+        }
         throw Object.assign(new Error(`HTTP ${res.status}: ${body.slice(0, 300)}`), { fatal: true })
       }
       return res.json()
@@ -214,7 +231,12 @@ async function runFalJob(model, input) {
   const responseUrl = submitted.response_url
   const deadline = Date.now() + POLL_TIMEOUT_MS
   for (;;) {
-    if (Date.now() > deadline) throw new Error(`Timeout nach ${POLL_TIMEOUT_MS / 1000}s (${model})`)
+    if (accountLocked) throw new Error('fal-Guthaben aufgebraucht — Job bleibt in der Queue hängen')
+    if (Date.now() > deadline) {
+      throw new Error(
+        `Timeout nach ${POLL_TIMEOUT_MS / 1000}s (${model}) — bei gesperrtem Konto (leeres Guthaben) bleiben Queue-Jobs ewig hängen`,
+      )
+    }
     const status = await falFetch(statusUrl, { method: 'GET' })
     if (status.status === 'COMPLETED') break
     if (status.status === 'FAILED' || status.status === 'CANCELLED') {
@@ -451,6 +473,7 @@ let failed = 0
 const queue = [...pending]
 async function worker() {
   for (;;) {
+    if (accountLocked) return
     const job = queue.shift()
     if (!job) return
     try {
@@ -466,4 +489,10 @@ async function worker() {
 await Promise.all(Array.from({ length: CONCURRENCY }, worker))
 
 console.log(`\n${done} generiert, ${skipped} übersprungen, ${failed} fehlgeschlagen.`)
+if (accountLocked) {
+  console.error(
+    '\nfal-Guthaben aufgebraucht — Lauf abgebrochen. Aufladen unter https://fal.ai/dashboard/billing,' +
+    '\ndann denselben Befehl erneut ausführen (Fertiges wird übersprungen).',
+  )
+}
 if (failed) process.exit(1)

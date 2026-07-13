@@ -33,6 +33,10 @@ export const STYLE = {
     'back wall parallel to the picture plane, floor running level across the ' +
     'bottom edge, room seen straight-on from inside, empty room, ' +
     'no people, no animals, no text, no watermark',
+  object:
+    'fine pixel art, 16-bit hi-bit style, a single museum exhibit object on display, ' +
+    'centered, isolated, softly lit from above, plain flat light grey background, ' +
+    'no text, no watermark, no people, no hands',
   // "natural realistic body proportions" hält die Figuren-Anatomie über
   // alle Charaktere einheitlich — ohne mischt Flux Chibi- und Normalformen
   character:
@@ -102,6 +106,20 @@ export const SCENES = [
     prompt: 'frozen industrial canal running horizontally across the frame, ice on the water, coal barge in full side profile, quay in the foreground, cranes and chimneys behind, cold blue street lamps' },
   { key: '1960-muehle', epoch: 1960, seed: 196007, interior: true,
     prompt: 'old watermill interior converted to storage, wooden gears at rest, crates and tools, single electric bulb' },
+]
+
+/**
+ * Story-Objekte: Exponate für die Galerie-Rahmen → src/assets/objects/{key}.png
+ * (256x256, transparent, zentriert). Referenziert aus src/scene/gallerySets.ts.
+ * Platzhalter, bis Originalfotos aus dem Museumsbestand vorliegen.
+ */
+export const OBJECTS = [
+  { key: 'taschenuhr', seed: 800001,
+    prompt: 'golden pocket watch with ornate engraved case and fine chain, open lid showing a roman numeral dial' },
+  { key: 'lohnkasse', seed: 800002,
+    prompt: 'heavy iron railway cash box with rivets and a brass lock, worn dark green paint' },
+  { key: 'blaupausen', seed: 800003,
+    prompt: 'rolled architectural blueprints on deep dark blue cyanotype paper, crisp white technical drawing lines, one sheet half unrolled' },
 ]
 
 /**

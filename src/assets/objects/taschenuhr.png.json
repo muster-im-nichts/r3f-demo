@@ -1,0 +1,24 @@
+{
+  "params": {
+    "key": "taschenuhr",
+    "type": "object",
+    "model": "fal-ai/flux/dev",
+    "prompt": "fine pixel art, 16-bit hi-bit style, a single museum exhibit object on display, centered, isolated, softly lit from above, plain flat light grey background, no text, no watermark, no people, no hands. golden pocket watch with ornate engraved case and fine chain, open lid showing a roman numeral dial",
+    "seed": 800001,
+    "steps": 28,
+    "genSize": {
+      "width": 768,
+      "height": 768
+    },
+    "outSize": {
+      "width": 256,
+      "height": 256
+    },
+    "colors": null,
+    "kernel": "lanczos3",
+    "flip": false,
+    "pixelate": 1
+  },
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20407/ku2TnjWftb2Ui_whHKCgK_VgFlnpDS.png",
+  "generatedAt": "2026-07-12T23:50:34.680Z"
+}

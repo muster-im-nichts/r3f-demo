@@ -1,0 +1,24 @@
+{
+  "params": {
+    "key": "blaupausen",
+    "type": "object",
+    "model": "fal-ai/flux/dev",
+    "prompt": "fine pixel art, 16-bit hi-bit style, a single museum exhibit object on display, centered, isolated, softly lit from above, plain flat light grey background, no text, no watermark, no people, no hands. rolled architectural blueprints on deep dark blue cyanotype paper, crisp white technical drawing lines, one sheet half unrolled",
+    "seed": 800003,
+    "steps": 28,
+    "genSize": {
+      "width": 768,
+      "height": 768
+    },
+    "outSize": {
+      "width": 256,
+      "height": 256
+    },
+    "colors": null,
+    "kernel": "lanczos3",
+    "flip": false,
+    "pixelate": 1
+  },
+  "sourceUrl": "https://v3b.fal.media/files/b/0aa20ec5/I6UTbsflfqwn_uxYzaZbk_6y5s5WQn.png",
+  "generatedAt": "2026-07-13T07:28:52.993Z"
+}

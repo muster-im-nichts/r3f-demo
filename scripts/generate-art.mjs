@@ -35,7 +35,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
-import { STYLE, EPOCH_CONTEXT, SCENES, CHARACTERS } from './art-manifest.mjs'
+import { STYLE, EPOCH_CONTEXT, SCENES, CHARACTERS, OBJECTS } from './art-manifest.mjs'
 
 // --- Konfiguration ---------------------------------------------------------
 
@@ -57,9 +57,13 @@ const SCENE_OUT_SIZE = { width: 480, height: 270 }
 const SPRITE_GEN_SIZE = { width: 640, height: 960 }
 const SPRITE_OUT_SIZE = { width: 128, height: 192 } // 2:3 — muss SPRITE_ASPECT entsprechen
 const SPRITE_FIGURE = { width: 120, height: 186, floor: 2 } // Figur-Box + Bodenabstand
+const OBJECT_GEN_SIZE = { width: 768, height: 768 }
+const OBJECT_OUT_SIZE = { width: 256, height: 256 }
+const OBJECT_BOX = 240 // Motiv-Box innerhalb der Leinwand
 
 const SCENES_DIR = new URL('../src/assets/scenes/', import.meta.url)
 const CHARS_DIR = new URL('../src/assets/characters/', import.meta.url)
+const OBJECTS_DIR = new URL('../src/assets/objects/', import.meta.url)
 const RAW_DIR = new URL('./.art-cache/', import.meta.url)
 
 const CONCURRENCY = 3
@@ -147,6 +151,20 @@ function buildJobs() {
       flipExplicit: c.flip !== undefined,
       pixelate: c.pixelate ?? 1,
       target: new URL(`${c.key}.png`, CHARS_DIR),
+    })
+  }
+  for (const o of OBJECTS) {
+    jobs.push({
+      key: o.key,
+      type: 'object',
+      prompt: `${STYLE.object}. ${o.prompt}`,
+      seed: o.seed,
+      model: FLUX_MODELS[o.model ?? flags.model],
+      steps: o.steps ?? (flags.model === 'schnell' ? 4 : 28),
+      genSize: OBJECT_GEN_SIZE,
+      outSize: OBJECT_OUT_SIZE,
+      kernel: o.kernel ?? 'lanczos3',
+      target: new URL(`${o.key}.png`, OBJECTS_DIR),
     })
   }
   return jobs
@@ -393,11 +411,39 @@ async function processSprite(job, raw) {
   return result.png().toBuffer()
 }
 
+/** Objekt: Trim auf das Motiv, zentriert auf transparente Leinwand, binäres Alpha. */
+async function processObject(job, raw) {
+  const motif = await sharp(raw)
+    .trim()
+    .resize(OBJECT_BOX, OBJECT_BOX, { fit: 'inside', kernel: job.kernel })
+    .png()
+    .toBuffer()
+  const meta = await sharp(motif).metadata()
+  const canvas = await sharp({
+    create: {
+      width: job.outSize.width,
+      height: job.outSize.height,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  })
+    .composite([{
+      input: motif,
+      left: Math.round((job.outSize.width - meta.width) / 2),
+      top: Math.round((job.outSize.height - meta.height) / 2),
+    }])
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const { data, info } = canvas
+  for (let i = 3; i < data.length; i += 4) data[i] = data[i] >= 128 ? 255 : 0
+  return sharp(data, { raw: info }).png().toBuffer()
+}
+
 // --- Ein Asset komplett ------------------------------------------------------
 
 async function generateAsset(job) {
   const fluxUrl = await generateImage(job)
-  const sourceUrl = job.type === 'character' ? await removeBackground(fluxUrl) : fluxUrl
+  const sourceUrl = job.type === 'scene' ? fluxUrl : await removeBackground(fluxUrl)
   const raw = await download(sourceUrl)
 
   // Blick-Richter: Basis-Blickrichtung im Spiel ist rechts; blickt die
@@ -416,7 +462,11 @@ async function generateAsset(job) {
   }
 
   const processed =
-    job.type === 'scene' ? await processScene(job, raw) : await processSprite({ ...job, flip }, raw)
+    job.type === 'scene'
+      ? await processScene(job, raw)
+      : job.type === 'object'
+        ? await processObject(job, raw)
+        : await processSprite({ ...job, flip }, raw)
 
   // Zielmaße validieren, bevor irgendwas geschrieben wird
   const meta = await sharp(processed).metadata()
@@ -494,6 +544,7 @@ if (flags.dryRun) {
 
 mkdirSync(SCENES_DIR, { recursive: true })
 mkdirSync(CHARS_DIR, { recursive: true })
+mkdirSync(OBJECTS_DIR, { recursive: true })
 
 let done = 0
 let failed = 0

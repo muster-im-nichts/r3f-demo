@@ -42,6 +42,15 @@ for (const [path, json] of Object.entries(
   import.meta.glob('../assets/characters/*.png.json', { eager: true, import: 'default' }) as Record<string, Sidecar>,
 )) charMeta.set(path.split('/').pop()!.replace(/\.png\.json$/, ''), json)
 
+const objectUrls = asUrlMap(
+  import.meta.glob('../assets/objects/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>,
+  /\.png$/,
+)
+const objectMeta = new Map<string, Sidecar>()
+for (const [path, json] of Object.entries(
+  import.meta.glob('../assets/objects/*.png.json', { eager: true, import: 'default' }) as Record<string, Sidecar>,
+)) objectMeta.set(path.split('/').pop()!.replace(/\.png\.json$/, ''), json)
+
 const sceneUrls = asUrlMap(
   import.meta.glob('../assets/scenes/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>,
   /\.png$/,
@@ -197,8 +206,31 @@ function SceneCard({ sceneKey }: { sceneKey: string }) {
   )
 }
 
+function ObjectCard({ objectKey }: { objectKey: string }) {
+  const meta = objectMeta.get(objectKey)
+  return (
+    <div style={panel}>
+      <div style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '10px', color: gold, marginBottom: '8px' }}>
+        {objectKey}
+      </div>
+      <div style={{ ...stage, alignItems: 'center', padding: '14px 0' }}>
+        <img src={objectUrls.get(objectKey)} alt={objectKey} style={{ width: '160px', imageRendering: 'pixelated' }} />
+      </div>
+      <div style={{ marginTop: '8px' }}>
+        {meta && <Badge label="seed" value={String(meta.params.seed)} />}
+        {meta && (
+          <details style={{ fontSize: '15px', color: '#cfc4ae', marginTop: '4px' }}>
+            <summary style={{ cursor: 'pointer', opacity: 0.7 }}>Prompt</summary>
+            <div style={{ opacity: 0.85, marginTop: '4px' }}>{meta.params.prompt}</div>
+          </details>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function App() {
-  const [tab, setTab] = useState<'figuren' | 'kulissen'>('figuren')
+  const [tab, setTab] = useState<'figuren' | 'kulissen' | 'objekte'>('figuren')
   const epochs = [...new Set([...sceneUrls.keys()].map(k => k.split('-')[0]))].sort()
 
   return (
@@ -207,7 +239,7 @@ function App() {
         <h1 style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '14px', color: gold, margin: 0 }}>
           Asset-Viewer
         </h1>
-        {(['figuren', 'kulissen'] as const).map(t => (
+        {(['figuren', 'kulissen', 'objekte'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -219,7 +251,11 @@ function App() {
               color: tab === t ? gold : '#cfc4ae',
             }}
           >
-            {t === 'figuren' ? `Figuren (${FIGURES.length})` : `Kulissen (${sceneUrls.size})`}
+            {t === 'figuren'
+              ? `Figuren (${FIGURES.length})`
+              : t === 'kulissen'
+                ? `Kulissen (${sceneUrls.size})`
+                : `Objekte (${objectUrls.size})`}
           </button>
         ))}
         <span style={{ opacity: 0.5, fontSize: '15px' }}>
@@ -230,6 +266,10 @@ function App() {
       {tab === 'figuren' ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px' }}>
           {FIGURES.map(f => <FigureCard key={f.id} figure={f} />)}
+        </div>
+      ) : tab === 'objekte' ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px' }}>
+          {[...objectUrls.keys()].sort().map(k => <ObjectCard key={k} objectKey={k} />)}
         </div>
       ) : (
         epochs.map(epoch => (

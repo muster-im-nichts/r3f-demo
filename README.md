@@ -46,8 +46,12 @@ cast: ['wache', 'karl'],   // optional: Grundbesetzung statt Szenen-Standard
 - Alle sechs Kampagnen sind im Drehbuch-Format geschrieben.
 - Anwesende NPCs sind anklickbar und geben eine Plauderzeile (`chatter` in
   `npcs.ts`), die ans Drehbuch der Textbox angehängt und vorgelesen wird.
-- `src/scene/` — die R3F-Bühne: Backdrop mit Crossfade, prozeduraler
-  Pixel-Avatar, Parallax-Kamera, Textur-Lader mit Platzhalter-Fallback.
+- `src/scene/` — die R3F-Bühne: Museumsrundgang-Inszenierung (`GalleryRoom`
+  mit Wand/Boden in Epochen-Neon und Bilderrahmen-Galerie, bestückt über
+  `gallerySets.ts`), Parallax-Kamera, Textur-Lader mit Platzhalter-Fallback.
+  Die Rahmen zeigen Szenengemälde, Figuren-Porträts und Story-Exponate
+  (`src/assets/objects/`) — später auch Originalfotos aus dem Museumsbestand
+  (kind `image` in `gallerySets.ts`).
 - `src/ui/` — DOM-Overlays: Start-, Adventure- und End-Screen, Letterbox.
 - `src/audio/` — prozeduraler Chiptune-Loop und SFX (WebAudio, keine Dateien);
   dazu `voice.ts` für Vorlesen (TTS) und Sprachwahl der Optionen (STT).
@@ -91,9 +95,10 @@ der prozedurale Pixel-Platzhalter.
 
 ## KI-Artwork (fal.ai)
 
-Szenen und Figuren erzeugt die Pipeline `npm run generate-art` über
-fal.ai (Flux + BiRefNet-Freistellung) und bereitet sie als feines
-Pixel-Art auf (Szenen 480×270, Sprites 128×192 mit binärem Alpha).
+Szenen, Figuren und Story-Objekte erzeugt die Pipeline
+`npm run generate-art` über fal.ai (Flux + BiRefNet-Freistellung) und
+bereitet sie als feines Pixel-Art auf (Szenen 480×270, Sprites 128×192,
+Objekte 256×256 — Sprites/Objekte mit binärem Alpha).
 Dazu in der `.env` einen Key ergänzen (ohne `VITE_`-Präfix — der Key
 bleibt im Build-Script und landet nie im Client-Bundle):
 

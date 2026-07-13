@@ -3,6 +3,8 @@ import { Canvas } from '@react-three/fiber'
 import { CanvasTexture } from 'three'
 import { CameraRig } from './CameraRig'
 import { Backdrop } from './Backdrop'
+import { GalleryRoom } from './GalleryRoom'
+import { GALLERY_SETS } from './gallerySets'
 import { Avatar } from './Avatar'
 import { Props } from './Props'
 import { NpcStage } from './NpcStage'
@@ -78,7 +80,15 @@ export function Stage({
     >
       <Suspense fallback={null}>
         <CameraRig />
-        <Backdrop epoch={epoch} scene={scene} />
+        {/* Jede Szene ist ein Museumsraum (Rundgang-Inszenierung); das
+            Matte-Painting-Backdrop bleibt als Fallback für Szenen ohne
+            Galerie-Bestückung. Raumwechsel ist hart — die Props-Falltür-
+            Animation und der Lauf der Figur kaschieren ihn. */}
+        {GALLERY_SETS[scene] ? (
+          <GalleryRoom epoch={epoch} frames={GALLERY_SETS[scene]} />
+        ) : (
+          <Backdrop epoch={epoch} scene={scene} />
+        )}
         <Props scene={scene} leaving={leaving} />
         <NpcStage scene={scene} cast={cast} onTalk={onTalk} />
         <Avatar
